@@ -13,7 +13,10 @@
           "editor.rulers": [80]
         }
       },
-      "extensions": ["esbenp.prettier-vscode"]
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next"
+      ]
     }
   }
 }
