@@ -1,5 +1,6 @@
 import { Connection } from "postgresql-client";
 import express, { NextFunction, Request, Response } from "express";
+import { engine } from "express-handlebars";
 
 const connection = new Connection(
   "postgres://postgres:postgres@localhost/sticky",
@@ -18,23 +19,26 @@ async function get(): Promise<string> {
 
 const app = express();
 
+app.engine("handlebars", engine());
+app.set("view engine", "handlebars");
+app.set("views", "./dist/views");
+
+app.use(express.static("./dist/public"));
+
 app.get("/", async (_req, res) => {
   let data = await get();
-  res.type("text/plain");
-  res.send("Hey there\n" + data);
+  res.render("home", { data });
 });
 
 app.use((_req, res) => {
-  res.type("text/plain");
   res.status(404);
-  res.send("Not found");
+  res.render("404");
 });
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err.message);
-  res.type("text/plain");
   res.status(500);
-  res.send("Server Error");
+  res.render("500");
 });
 
 app.listen(port, () => console.log("Express started"));
