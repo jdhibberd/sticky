@@ -17,6 +17,6 @@
   "scripts": {
     "build": "./scripts/build.sh",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js dist",
-    "server": "node ./dist/main.js"
+    "server": "node ./dist/src/main.js"
   }
 }

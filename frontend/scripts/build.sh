@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
 npx prettier . --write
-npx tsc
+npx tsc --build
 npx webpack
 rm -r ./build

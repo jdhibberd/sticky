@@ -12,9 +12,9 @@ class Entity<T extends { [key: string]: unknown; id?: string }> {
   private dropSql: string;
 
   constructor(
-    private connection: Connection,
     table: string,
     private props: Exclude<keyof T, "id">[],
+    private options: string,
   ) {
     const propsList = props.join(", ");
     const insertSqlValues = props.map((_x, i) => `\$${i + 2}`).join(", ");
@@ -37,19 +37,20 @@ class Entity<T extends { [key: string]: unknown; id?: string }> {
    */
   async upsert(entity: T): Promise<void> {
     const values = this.props.map((prop) => entity[prop]);
-    await this.connection.connect();
+    const conn = new Connection(this.options);
+    await conn.connect();
     try {
       if (entity.hasOwnProperty("id")) {
-        await this.connection.query(this.updateSql, {
+        await conn.query(this.updateSql, {
           params: [entity.id, ...values],
         });
       } else {
-        await this.connection.query(this.insertSql, {
+        await conn.query(this.insertSql, {
           params: [crypto.randomUUID(), ...values],
         });
       }
     } finally {
-      await this.connection.close();
+      await conn.close();
     }
   }
 
@@ -57,9 +58,10 @@ class Entity<T extends { [key: string]: unknown; id?: string }> {
    * Read all entities (of a common type) from the database.
    */
   async select(): Promise<T[]> {
-    await this.connection.connect();
+    const conn = new Connection(this.options);
+    await conn.connect();
     try {
-      const result = await this.connection.query(this.selectSql);
+      const result = await conn.query(this.selectSql);
       if (result.rows === undefined) throw "No rows returned.";
       return result.rows.map((row: unknown[]) => {
         return Object.fromEntries(
@@ -70,7 +72,7 @@ class Entity<T extends { [key: string]: unknown; id?: string }> {
         ) as T;
       });
     } finally {
-      await this.connection.close();
+      await conn.close();
     }
   }
 
@@ -78,25 +80,25 @@ class Entity<T extends { [key: string]: unknown; id?: string }> {
    * Delete an entity from the database.
    */
   async drop(id: string): Promise<void> {
-    await this.connection.connect();
+    const conn = new Connection(this.options);
+    await conn.connect();
     try {
-      await this.connection.query(this.dropSql, { params: [id] });
+      await conn.query(this.dropSql, { params: [id] });
     } finally {
-      await this.connection.close();
+      await conn.close();
     }
   }
 }
 
-const connection = new Connection(
-  "postgres://postgres:postgres@localhost/sticky",
-);
-
 /**
  * Schema
  */
-type Collection = { id: string; name: string };
-type Note = { id: string; content: string };
-export const collections = new Entity<Collection>(connection, "collections", [
-  "name",
-]);
-export const notes = new Entity<Note>(connection, "notes", ["content"]);
+export type Collection = { id: string; name: string };
+export type Note = { id: string; content: string };
+const options = "postgres://postgres:postgres@localhost/sticky";
+export const collections = new Entity<Collection>(
+  "collections",
+  ["name"],
+  options,
+);
+export const notes = new Entity<Note>("notes", ["content"], options);
