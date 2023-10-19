@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import type { Collection } from "../../backend/src/lib/entity.js";
-import Componse from "./Compose.js";
+import type { Collection } from "../../../backend/src/lib/entity.js";
+import ComposeCard from "./ComposeCard.js";
 import CollectionCard from "./CollectionCard.js";
 
 export default function App() {
@@ -22,15 +22,11 @@ export default function App() {
   };
 
   return (
-    <span>
-      <ul>
-        {state.map((collection) => (
-          <CollectionCard key={collection.id} collection={collection} />
-        ))}
-        <li>
-          <Componse />
-        </li>
-      </ul>
-    </span>
+    <div className="app">
+      {state.map((collection) => (
+        <CollectionCard key={collection.id} collection={collection} />
+      ))}
+      <ComposeCard />
+    </div>
   );
 }

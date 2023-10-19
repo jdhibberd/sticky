@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { Collection } from "../../backend/src/lib/entity.js";
+import type { Collection } from "../../../backend/src/lib/entity.js";
 
 type Props = {
   collection: Collection;
@@ -15,8 +15,9 @@ export default function CollectionCard({ collection }: Props) {
     dispatchEvent(new Event("collectionsChanged"));
   };
 
-  const onKeyDown = async (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const onKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.code === "Enter") {
+      event.preventDefault();
       await fetch("/api/collections", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -26,7 +27,7 @@ export default function CollectionCard({ collection }: Props) {
     }
   };
 
-  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setState(event.target.value);
   };
 
@@ -35,15 +36,21 @@ export default function CollectionCard({ collection }: Props) {
   };
 
   return (
-    <li>
-      <input
-        type="text"
-        onChange={onChange}
-        onKeyDown={onKeyDown}
-        onBlur={onBlur}
-        value={state}
-      />
-      <button onClick={onDeleteClick}>Delete</button>
-    </li>
+    <div className="collection-card">
+      <div className="header">
+        <div className="author">John</div>
+        <div className="delete">
+          <button onClick={onDeleteClick}>Delete</button>
+        </div>
+      </div>
+      <div className="content">
+        <textarea
+          onChange={onChange}
+          onKeyDown={onKeyDown}
+          onBlur={onBlur}
+          value={state}
+        />
+      </div>
+    </div>
   );
 }
