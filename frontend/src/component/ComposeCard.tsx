@@ -23,7 +23,6 @@ export default function ComponseCard() {
 
   return (
     <div className="compose-card">
-      <div className="header">John</div>
       <div className="content">
         <textarea
           autoFocus
@@ -32,6 +31,7 @@ export default function ComponseCard() {
           value={state}
         />
       </div>
+      <div className="footer">John</div>
     </div>
   );
 }

@@ -3,32 +3,47 @@
   border-radius: 3px;
   width: 200px;
   height: 200px;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
-.collection-card > .header {
+.collection-card > .footer {
   background-color: aquamarine;
+  margin-top: auto;
   display: flex;
   flex-direction: row;
+  height: 38px;
 }
 
-.collection-card > .header > .author {
-  padding: 10px;
+.collection-card > .footer > .author {
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
 }
 
-.collection-card > .header > .delete {
+.collection-card > .footer > .buttons {
   margin-left: auto;
-  padding: 10px;
+  padding: 0 4px 0 10px;
+  display: flex;
+  align-items: center;
 }
 
-.collection-card > .header > .delete > button {
-  border: none;
-  background: none;
-  padding: 0;
-  font-family: inherit;
-  font-size: inherit;
+.collection-card > .footer > .buttons > .button {
+  width: 28px;
+  height: 28px;
   cursor: pointer;
-  text-decoration: underline;
   opacity: 60%;
+  margin-left: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.collection-card > .footer > .buttons > .button:hover {
+  background-color: rgba(0, 0, 0, 0.16);
+  border-radius: 3px;
 }
 
 .collection-card > .content {
@@ -45,4 +60,15 @@
   font-size: inherit;
   resize: none;
   outline: none;
+}
+
+.collection-card > .shadow {
+  z-index: -1;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  border: solid 2px black;
+  border-radius: 3px;
+  width: 200px;
+  height: 200px;
 }

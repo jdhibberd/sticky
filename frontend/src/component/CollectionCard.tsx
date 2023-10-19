@@ -37,12 +37,6 @@ export default function CollectionCard({ collection }: Props) {
 
   return (
     <div className="collection-card">
-      <div className="header">
-        <div className="author">John</div>
-        <div className="delete">
-          <button onClick={onDeleteClick}>Delete</button>
-        </div>
-      </div>
       <div className="content">
         <textarea
           onChange={onChange}
@@ -51,6 +45,16 @@ export default function CollectionCard({ collection }: Props) {
           value={state}
         />
       </div>
+      <div className="footer">
+        <div className="author">John</div>
+        <div className="buttons">
+          <div className="button">29</div>
+          <div className="button" onClick={onDeleteClick}>
+            {/* &#x2715; */}╱
+          </div>
+        </div>
+      </div>
+      <div className="shadow" />
     </div>
   );
 }
