@@ -12,7 +12,7 @@ export default function Componse() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name }),
       });
-      dispatchEvent(new Event("composed"));
+      dispatchEvent(new Event("collectionsChanged"));
     }
   };
 
