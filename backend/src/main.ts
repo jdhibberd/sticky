@@ -67,6 +67,10 @@ app.delete("/api/notes/:id", async (req, res) => {
  * Server
  */
 
+app.get("/", async (req, res) => {
+  res.render("home");
+});
+
 app.use((_req, res) => {
   res.status(404);
   res.render("404");
@@ -86,6 +90,6 @@ app.listen(port, () => console.log("Express started"));
  * curl -i -X GET http://localhost:8080/api/collections
  * curl -i -X POST -H 'Content-Type: application/json' -d '{"name": "Baz"}' http://localhost:8080/api/collections
  * curl -i -X POST -H 'Content-Type: application/json' -d '{"name": "Foo"}' http://localhost:8080/api/collections
- * curl -i -X POST -H 'Content-Type: application/json' -d '{"id":"0a000ead-769e-419d-80fa-250f0e29d37b", "name": "Foo 2"}' http://localhost:8080/api/collections
+ * curl -i -X PUT -H 'Content-Type: application/json' -d '{"id":"0a000ead-769e-419d-80fa-250f0e29d37b", "name": "Foo 2"}' http://localhost:8080/api/collections
  * curl -i -X DELETE http://localhost:8080/api/collections/56de7248-cf62-4f2e-a7ab-ddc9b1995513
  */

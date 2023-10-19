@@ -1,3 +1,4 @@
+// @ts-ignore
 import { Connection } from "postgresql-client";
 import crypto from "crypto";
 
