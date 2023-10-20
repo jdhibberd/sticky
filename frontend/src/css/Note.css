@@ -1,4 +1,4 @@
-.collection-card {
+.note {
   border: solid 2px black;
   border-radius: 3px;
   width: 200px;
@@ -9,28 +9,32 @@
   position: relative;
 }
 
-.collection-card > .footer {
+.note-navigatable {
+  cursor: pointer;
+}
+
+.note > .footer {
   background-color: aquamarine;
-  margin-top: auto;
   display: flex;
   flex-direction: row;
   height: 38px;
+  flex-grow: 0;
 }
 
-.collection-card > .footer > .author {
+.note > .footer > .author {
   padding: 0 10px;
   display: flex;
   align-items: center;
 }
 
-.collection-card > .footer > .buttons {
+.note > .footer > .buttons {
   margin-left: auto;
   padding: 0 4px 0 10px;
   display: flex;
   align-items: center;
 }
 
-.collection-card > .footer > .buttons > .button {
+.note > .footer > .buttons > .button {
   width: 28px;
   height: 28px;
   cursor: pointer;
@@ -41,16 +45,17 @@
   justify-content: center;
 }
 
-.collection-card > .footer > .buttons > .button:hover {
+.note > .footer > .buttons > .button:hover {
   background-color: rgba(0, 0, 0, 0.16);
   border-radius: 3px;
 }
 
-.collection-card > .content {
+.note > .content {
   padding: 10px;
+  flex-grow: 1;
 }
 
-.collection-card > .content > textarea {
+.note > .content > textarea {
   padding: 0;
   margin: 0;
   border: none;
@@ -62,7 +67,7 @@
   outline: none;
 }
 
-.collection-card > .shadow {
+.note > .shadow {
   z-index: -1;
   position: absolute;
   top: 3px;

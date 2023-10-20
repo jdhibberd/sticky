@@ -7,7 +7,10 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "jsx": "react"
+    "jsx": "react",
+    "paths": {
+      "@/backend/*": ["../backend/src/lib/*"]
+    }
   },
   "include": ["src"],
   "references": [{ "path": "../backend" }]

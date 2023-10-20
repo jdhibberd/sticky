@@ -1,19 +1,21 @@
 import React, { useState } from "react";
+import { getNotePath } from "../lib/util.js";
 
-export default function ComponseCard() {
+export default function ComposableNote() {
   const [state, setState] = useState<string>("");
 
   const onKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.code === "Enter") {
       event.preventDefault();
-      const name = state;
+      const content = state;
+      const path = getNotePath();
       setState("");
-      await fetch("/api/collections", {
+      await fetch("/api/notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name }),
+        body: JSON.stringify({ content, path }),
       });
-      dispatchEvent(new Event("collectionsChanged"));
+      dispatchEvent(new Event("notesChanged"));
     }
   };
 
@@ -22,7 +24,7 @@ export default function ComponseCard() {
   };
 
   return (
-    <div className="compose-card">
+    <div className="note">
       <div className="content">
         <textarea
           autoFocus
@@ -31,7 +33,9 @@ export default function ComponseCard() {
           value={state}
         />
       </div>
-      <div className="footer">John</div>
+      <div className="footer">
+        <div className="author">John</div>
+      </div>
     </div>
   );
 }

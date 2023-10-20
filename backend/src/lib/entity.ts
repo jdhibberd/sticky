@@ -1,11 +1,12 @@
 // @ts-ignore
 import { Connection } from "postgresql-client";
 import crypto from "crypto";
+import { getAncestorIdsFromNotePath } from "./note-view-data.js";
 
 /**
  * Provides simple read/write access to entities stored in the database.
  */
-class Entity<T extends { [key: string]: unknown; id?: string }> {
+class Entities<T extends { [key: string]: unknown; id?: string }> {
   private insertSql: string;
   private selectSql: string;
   private updateSql: string;
@@ -14,7 +15,7 @@ class Entity<T extends { [key: string]: unknown; id?: string }> {
   constructor(
     table: string,
     private props: Exclude<keyof T, "id">[],
-    private options: string,
+    protected options: string,
   ) {
     const propsList = props.join(", ");
     const insertSqlValues = props.map((_x, i) => `\$${i + 2}`).join(", ");
@@ -63,17 +64,27 @@ class Entity<T extends { [key: string]: unknown; id?: string }> {
     try {
       const result = await conn.query(this.selectSql);
       if (result.rows === undefined) throw "No rows returned.";
-      return result.rows.map((row: unknown[]) => {
-        return Object.fromEntries(
-          row.map<[keyof T, unknown]>((value, i) => [
-            i === 0 ? "id" : this.props[i - 1],
-            value,
-          ]),
-        ) as T;
-      });
+      return this.hydrateEntities(result.rows);
     } finally {
       await conn.close();
     }
+  }
+
+  /**
+   * Convert arrays of entity property values that have been returned from the
+   * database, into JavaScript objects with property names and values.
+   *
+   * [1, 2, 3] -> {a: 1, b: 2, c: 3}
+   */
+  protected hydrateEntities(rows: unknown[][]): T[] {
+    return rows.map((row: unknown[]) => {
+      return Object.fromEntries(
+        row.map<[keyof T, unknown]>((value, i) => [
+          i === 0 ? "id" : this.props[i - 1],
+          value,
+        ]),
+      ) as T;
+    });
   }
 
   /**
@@ -90,15 +101,44 @@ class Entity<T extends { [key: string]: unknown; id?: string }> {
   }
 }
 
+class Notes extends Entities<Note> {
+  /**
+   * Retrieve all note entities in a single query that are necessary to render
+   * a note view on the client.
+   */
+  async selectByPath(path: string): Promise<Note[]> {
+    if (path === "") return this.select();
+    const ancestorIds = getAncestorIdsFromNotePath(path);
+    const ancestorPlaceholders = ancestorIds
+      .map((_, i) => `\$${i + 1}`)
+      .join(", ");
+    const likePlaceholder = `\$${ancestorIds.length + 1}`;
+    const sql = `
+      SELECT id, content, path 
+      FROM notes 
+      WHERE id IN (${ancestorPlaceholders})
+      UNION
+      SELECT id, content, path
+      FROM notes
+      WHERE path LIKE ${likePlaceholder}
+    `;
+    const conn = new Connection(this.options);
+    await conn.connect();
+    try {
+      const result = await conn.query(sql, {
+        params: [...ancestorIds, `${path}%`],
+      });
+      if (result.rows === undefined) throw "No rows returned.";
+      return this.hydrateEntities(result.rows);
+    } finally {
+      await conn.close();
+    }
+  }
+}
+
 /**
  * Schema
  */
-export type Collection = { id: string; name: string };
-export type Note = { id: string; content: string };
+export type Note = { id: string; content: string; path: string };
 const options = "postgres://postgres:postgres@localhost/sticky";
-export const collections = new Entity<Collection>(
-  "collections",
-  ["name"],
-  options,
-);
-export const notes = new Entity<Note>("notes", ["content"], options);
+export const notes = new Notes("notes", ["content", "path"], options);
