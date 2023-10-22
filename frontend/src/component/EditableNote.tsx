@@ -71,7 +71,7 @@ export default function EditableNote({ note, hasChildren = false }: Props) {
   const renderContent = () => {
     if (state.isEditing) {
       return (
-        <div className="content">
+        <div className="content content-editable">
           <textarea
             ref={inputRef}
             onChange={onChange}
@@ -83,7 +83,7 @@ export default function EditableNote({ note, hasChildren = false }: Props) {
       );
     } else {
       return (
-        <div className="content" onClick={onContentClick}>
+        <div className="content content-link" onClick={onContentClick}>
           {state.content}
         </div>
       );
@@ -92,27 +92,19 @@ export default function EditableNote({ note, hasChildren = false }: Props) {
 
   const renderMutateButton = () => {
     if (state.isEditing) {
-      return (
-        <div className="button" onClick={onDeleteClick}>
-          &#x2715;
-        </div>
-      );
+      return <button onClick={onDeleteClick}>&#x2715;</button>;
     } else {
-      return (
-        <div className="button" onClick={onEditClick}>
-          /
-        </div>
-      );
+      return <button onClick={onEditClick}>/</button>;
     }
   };
 
   return (
-    <div className="note note-navigatable">
+    <div className="note">
       {renderContent()}
       <div className="footer">
         <div className="author">John</div>
         <div className="buttons">
-          <div className="button">29</div>
+          <button>29</button>
           {renderMutateButton()}
         </div>
       </div>

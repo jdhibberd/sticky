@@ -9,12 +9,12 @@ export default function ComposableNote() {
       event.preventDefault();
       const content = state;
       const path = getNotePath();
-      setState("");
       await fetch("/api/notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content, path }),
       });
+      setState("");
       dispatchEvent(new Event("notesChanged"));
     }
   };
@@ -25,13 +25,8 @@ export default function ComposableNote() {
 
   return (
     <div className="note">
-      <div className="content">
-        <textarea
-          autoFocus
-          onChange={onChange}
-          onKeyDown={onKeyDown}
-          value={state}
-        />
+      <div className="content content-editable">
+        <textarea onChange={onChange} onKeyDown={onKeyDown} value={state} />
       </div>
       <div className="footer">
         <div className="author">John</div>
