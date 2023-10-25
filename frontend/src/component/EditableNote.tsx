@@ -94,9 +94,32 @@ export default function EditableNote({ note, hasChildren = false }: Props) {
 
   const renderMutateButton = () => {
     if (state.isEditing) {
-      return <button onClick={onDeleteClick}>&#x2715;</button>;
+      return (
+        <button onClick={onDeleteClick}>
+          <svg
+            viewBox="0 0 28 28"
+            xmlns="http://www.w3.org/2000/svg"
+            stroke="black"
+            strokeWidth={"2px"}
+          >
+            <line x1="72%" y1="28%" x2="28%" y2="72%" />
+            <line x1="28%" y1="28%" x2="72%" y2="72%" />
+          </svg>
+        </button>
+      );
     } else {
-      return <button onClick={onEditClick}>/</button>;
+      return (
+        <button onClick={onEditClick}>
+          <svg
+            viewBox="0 0 28 28"
+            xmlns="http://www.w3.org/2000/svg"
+            stroke="black"
+            strokeWidth={"2px"}
+          >
+            <line x1="72%" y1="28%" x2="28%" y2="72%" />
+          </svg>
+        </button>
+      );
     }
   };
 

@@ -17,7 +17,7 @@ class Entities<T extends { [key: string]: unknown; id?: string }> {
   constructor(
     table: string,
     private props: Exclude<keyof T, "id">[],
-    protected options: string,
+    protected connConfig: { [k: string]: string | undefined },
   ) {
     const propsList = props.join(", ");
     const insertSqlValues = props.map((_x, i) => `$${i + 2}`).join(", ");
@@ -40,7 +40,7 @@ class Entities<T extends { [key: string]: unknown; id?: string }> {
    */
   async upsert(entity: T): Promise<void> {
     const values = this.props.map((prop) => entity[prop]);
-    const conn = new Connection(this.options);
+    const conn = new Connection(this.connConfig);
     await conn.connect();
     try {
       if ("id" in entity) {
@@ -61,7 +61,7 @@ class Entities<T extends { [key: string]: unknown; id?: string }> {
    * Read all entities (of a common type) from the database.
    */
   async select(): Promise<T[]> {
-    const conn = new Connection(this.options);
+    const conn = new Connection(this.connConfig);
     await conn.connect();
     try {
       const result = await conn.query(this.selectSql);
@@ -93,7 +93,7 @@ class Entities<T extends { [key: string]: unknown; id?: string }> {
    * Delete an entity from the database.
    */
   async drop(id: string): Promise<void> {
-    const conn = new Connection(this.options);
+    const conn = new Connection(this.connConfig);
     await conn.connect();
     try {
       await conn.query(this.dropSql, { params: [id] });
@@ -124,7 +124,7 @@ class Notes extends Entities<Note> {
       FROM notes
       WHERE path LIKE ${likePlaceholder}
     `;
-    const conn = new Connection(this.options);
+    const conn = new Connection(this.connConfig);
     await conn.connect();
     try {
       const result = await conn.query(sql, {
@@ -142,5 +142,10 @@ class Notes extends Entities<Note> {
  * Schema
  */
 export type Note = { id: string; content: string; path: string };
-const options = "postgres://postgres:postgres@localhost/sticky";
-export const notes = new Notes("notes", ["content", "path"], options);
+const connConfig = {
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+};
+export const notes = new Notes("notes", ["content", "path"], connConfig);

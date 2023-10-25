@@ -4,7 +4,6 @@ import { notes } from "./lib/entity.js";
 import bodyParser from "body-parser";
 import { buildNoteViewData } from "./lib/note-view-data.js";
 
-const port = 8080;
 const app = express();
 
 /**
@@ -73,4 +72,4 @@ app.use(
   },
 );
 
-app.listen(port, () => console.log("Express started"));
+app.listen(process.env.PORT, () => console.log("Express started"));
