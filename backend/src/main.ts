@@ -31,7 +31,7 @@ app.post("/api/notes", async (req, res) => {
 
 app.get(
   "/api/notes",
-  async (req: Request<{}, {}, {}, { path: string }>, res) => {
+  async (req: Request<object, object, object, { path: string }>, res) => {
     const entities = await notes.selectByPath(req.query.path);
     const data = buildNoteViewData(req.query.path, entities);
     res.json(data);
@@ -61,10 +61,16 @@ app.use((_req, res) => {
   res.render("404");
 });
 
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  console.error(err.message);
-  res.status(500);
-  res.render("500");
-});
+app.use(
+  // QUIRK: express identifies error handlers as functions with 4 parameters,
+  // which must all be explicitly defined even if not used.
+  // https://expressjs.com/en/guide/error-handling.html
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  (err: Error, _req: Request, res: Response, _next: NextFunction): void => {
+    console.error(err.message);
+    res.status(500);
+    res.render("500");
+  },
+);
 
 app.listen(port, () => console.log("Express started"));

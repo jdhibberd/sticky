@@ -1,3 +1,5 @@
+// QUIRK: the module `postgresql-client` doesn't have types correctly configured
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { Connection } from "postgresql-client";
 import crypto from "crypto";
@@ -18,13 +20,13 @@ class Entities<T extends { [key: string]: unknown; id?: string }> {
     protected options: string,
   ) {
     const propsList = props.join(", ");
-    const insertSqlValues = props.map((_x, i) => `\$${i + 2}`).join(", ");
+    const insertSqlValues = props.map((_x, i) => `$${i + 2}`).join(", ");
     this.insertSql = `
       INSERT INTO ${table}(id, ${propsList}) 
       VALUES(uuid($1), ${insertSqlValues})`;
     this.selectSql = `SELECT id, ${propsList} FROM ${table}`;
     const updateSqlPairs = props
-      .map((x, i) => `${String(x)} = \$${i + 2}`)
+      .map((x, i) => `${String(x)} = $${i + 2}`)
       .join(", ");
     this.updateSql = `UPDATE ${table} SET ${updateSqlPairs} WHERE id = $1`;
     this.dropSql = `DELETE FROM ${table} WHERE id = $1`;
@@ -41,7 +43,7 @@ class Entities<T extends { [key: string]: unknown; id?: string }> {
     const conn = new Connection(this.options);
     await conn.connect();
     try {
-      if (entity.hasOwnProperty("id")) {
+      if ("id" in entity) {
         await conn.query(this.updateSql, {
           params: [entity.id, ...values],
         });
@@ -110,9 +112,9 @@ class Notes extends Entities<Note> {
     if (path === "") return this.select();
     const ancestorIds = getAncestorIdsFromNotePath(path);
     const ancestorPlaceholders = ancestorIds
-      .map((_, i) => `\$${i + 1}`)
+      .map((_, i) => `$${i + 1}`)
       .join(", ");
-    const likePlaceholder = `\$${ancestorIds.length + 1}`;
+    const likePlaceholder = `$${ancestorIds.length + 1}`;
     const sql = `
       SELECT id, content, path 
       FROM notes 

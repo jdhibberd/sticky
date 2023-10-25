@@ -54,6 +54,8 @@ export default function EditableNote({ note, hasChildren = false }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: note.id, content: state.content, path }),
       });
+      const textarea = inputRef.current!;
+      textarea.blur();
       dispatchEvent(new Event("notesChanged"));
     }
   };
