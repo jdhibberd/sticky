@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import type { Note } from "@/backend/entity.js";
-import { navigateToNote, getNotePath } from "../lib/util.js";
+import { navigateToNote } from "../lib/util.js";
 
 type Props = {
   note: Note;
@@ -9,24 +9,36 @@ type Props = {
 
 type State = {
   content: string;
+  contentDraft: string | undefined;
   isEditing: boolean;
 };
 
 export default function EditableNote({ note, hasChildren = false }: Props) {
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [state, setState] = useState<State>({
     content: note.content,
+    contentDraft: undefined,
     isEditing: false,
   });
 
   useEffect(() => {
     if (state.isEditing) {
-      const textarea = inputRef.current!;
+      // after rendering editable content place the cursor at the end of the
+      // content for convenience
+      const textarea = textareaRef.current!;
       textarea.focus();
       textarea.selectionStart = textarea.value.length;
     }
   }, [state.isEditing]);
+
+  const onDeleteMouseDown = async (event: React.MouseEvent) => {
+    // prevent the "onmousedown" event on the delete button from triggering the
+    // "onblur" event on the textarea, which would replace the delete button
+    // with the edit button and prevent the delete button from ever being
+    // clickable
+    event.preventDefault();
+  };
 
   const onDeleteClick = async () => {
     await fetch(`/api/notes/${note.id}`, {
@@ -41,33 +53,51 @@ export default function EditableNote({ note, hasChildren = false }: Props) {
 
   const onEditClick = () => {
     setState((prevState) => {
-      return { ...prevState, isEditing: true };
+      return { ...prevState, isEditing: true, contentDraft: prevState.content };
     });
   };
 
-  const onKeyDown = async (event: React.KeyboardEvent) => {
+  const onLikesClick = async () => {
+    await fetch("/api/notes", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...note, likes: note.likes + 1 }),
+    });
+    dispatchEvent(new Event("notesChanged"));
+  };
+
+  const onTextareaKeyDown = async (event: React.KeyboardEvent) => {
     if (event.code === "Enter") {
+      // interpret a press of the enter key to mean saving the note, and
+      // suppress the usual behaviour which is to add a newline to the end of
+      // the content
       event.preventDefault();
-      const path = getNotePath();
       await fetch("/api/notes", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: note.id, content: state.content, path }),
+        body: JSON.stringify({ ...note, content: state.contentDraft }),
       });
-      const textarea = inputRef.current!;
-      textarea.blur();
       dispatchEvent(new Event("notesChanged"));
+      setState((prevState) => {
+        return {
+          isEditing: false,
+          contentDraft: undefined,
+          content: prevState.contentDraft!,
+        };
+      });
     }
   };
 
-  const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const onTextareaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setState((prevState) => {
-      return { ...prevState, content: event.target.value };
+      return { ...prevState, contentDraft: event.target.value };
     });
   };
 
-  const onBlur = () => {
-    setState({ isEditing: false, content: note.content });
+  const onTextareaBlur = () => {
+    setState((prevState) => {
+      return { ...prevState, isEditing: false, contentDraft: undefined };
+    });
   };
 
   const renderContent = () => {
@@ -75,11 +105,11 @@ export default function EditableNote({ note, hasChildren = false }: Props) {
       return (
         <div className="content content-editable">
           <textarea
-            ref={inputRef}
-            onChange={onChange}
-            onKeyDown={onKeyDown}
-            onBlur={onBlur}
-            value={state.content}
+            ref={textareaRef}
+            onChange={onTextareaChange}
+            onKeyDown={onTextareaKeyDown}
+            onBlur={onTextareaBlur}
+            value={state.contentDraft}
           />
         </div>
       );
@@ -95,7 +125,7 @@ export default function EditableNote({ note, hasChildren = false }: Props) {
   const renderMutateButton = () => {
     if (state.isEditing) {
       return (
-        <button onClick={onDeleteClick}>
+        <button onClick={onDeleteClick} onMouseDown={onDeleteMouseDown}>
           <svg
             viewBox="0 0 28 28"
             xmlns="http://www.w3.org/2000/svg"
@@ -129,7 +159,7 @@ export default function EditableNote({ note, hasChildren = false }: Props) {
       <div className="footer">
         <div className="author">John</div>
         <div className="buttons">
-          <button>29</button>
+          <button onClick={onLikesClick}>{note.likes}</button>
           {renderMutateButton()}
         </div>
       </div>

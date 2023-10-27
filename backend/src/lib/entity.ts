@@ -9,27 +9,24 @@ import { getAncestorIdsFromNotePath } from "./note-view-data.js";
  * Provides simple read/write access to entities stored in the database.
  */
 class Entities<T extends { [key: string]: unknown; id?: string }> {
-  private insertSql: string;
-  private selectSql: string;
-  private updateSql: string;
-  private dropSql: string;
+  // helper strings to make it more convenient to build sql statements
+  protected propsList: string;
+  private insertParams: string;
+  private updateParams: string;
 
   constructor(
-    table: string,
-    private props: Exclude<keyof T, "id">[],
+    protected table: string,
+    private props: Extract<Exclude<keyof T, "id">, string>[],
     protected connConfig: { [k: string]: string | undefined },
   ) {
-    const propsList = props.join(", ");
-    const insertSqlValues = props.map((_x, i) => `$${i + 2}`).join(", ");
-    this.insertSql = `
-      INSERT INTO ${table}(id, ${propsList}) 
-      VALUES(uuid($1), ${insertSqlValues})`;
-    this.selectSql = `SELECT id, ${propsList} FROM ${table}`;
-    const updateSqlPairs = props
+    const propsSnakeCase = props.map((str) =>
+      str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`),
+    );
+    this.propsList = propsSnakeCase.join(", ");
+    this.insertParams = props.map((_, i) => `$${i + 2}`).join(", ");
+    this.updateParams = propsSnakeCase
       .map((x, i) => `${String(x)} = $${i + 2}`)
       .join(", ");
-    this.updateSql = `UPDATE ${table} SET ${updateSqlPairs} WHERE id = $1`;
-    this.dropSql = `DELETE FROM ${table} WHERE id = $1`;
   }
 
   /**
@@ -44,13 +41,22 @@ class Entities<T extends { [key: string]: unknown; id?: string }> {
     await conn.connect();
     try {
       if ("id" in entity) {
-        await conn.query(this.updateSql, {
-          params: [entity.id, ...values],
-        });
+        await conn.query(
+          `
+          UPDATE ${this.table} 
+          SET ${this.updateParams} 
+          WHERE id = $1
+          `,
+          { params: [entity.id, ...values] },
+        );
       } else {
-        await conn.query(this.insertSql, {
-          params: [crypto.randomUUID(), ...values],
-        });
+        await conn.query(
+          `
+          INSERT INTO ${this.table}(id, ${this.propsList}) 
+          VALUES(uuid($1), ${this.insertParams})
+          `,
+          { params: [crypto.randomUUID(), ...values] },
+        );
       }
     } finally {
       await conn.close();
@@ -60,33 +66,44 @@ class Entities<T extends { [key: string]: unknown; id?: string }> {
   /**
    * Read all entities (of a common type) from the database.
    */
-  async select(): Promise<T[]> {
+  async selectAll(): Promise<T[]> {
     const conn = new Connection(this.connConfig);
     await conn.connect();
     try {
-      const result = await conn.query(this.selectSql);
+      const result = await conn.query(
+        `
+        SELECT id, ${this.propsList} 
+        FROM ${this.table}
+        `,
+      );
       if (result.rows === undefined) throw "No rows returned.";
-      return this.hydrateEntities(result.rows);
+      return result.rows.map(this.hydrateEntity.bind(this));
     } finally {
       await conn.close();
     }
   }
 
   /**
-   * Convert arrays of entity property values that have been returned from the
-   * database, into JavaScript objects with property names and values.
-   *
-   * [1, 2, 3] -> {a: 1, b: 2, c: 3}
+   * Read all entities (of a common type) from the database.
    */
-  protected hydrateEntities(rows: unknown[][]): T[] {
-    return rows.map((row: unknown[]) => {
-      return Object.fromEntries(
-        row.map<[keyof T, unknown]>((value, i) => [
-          i === 0 ? "id" : this.props[i - 1],
-          value,
-        ]),
-      ) as T;
-    });
+  async selectById(id: string): Promise<T | null> {
+    const conn = new Connection(this.connConfig);
+    await conn.connect();
+    try {
+      const result = await conn.query(
+        `
+        SELECT id, ${this.propsList} 
+        FROM ${this.table} 
+        WHERE id = $1
+        `,
+        { params: [id] },
+      );
+      if (result.rows === undefined) throw "No rows returned.";
+      if (result.rows.length === 0) return null;
+      return this.hydrateEntity(result.rows[0]);
+    } finally {
+      await conn.close();
+    }
   }
 
   /**
@@ -96,10 +113,31 @@ class Entities<T extends { [key: string]: unknown; id?: string }> {
     const conn = new Connection(this.connConfig);
     await conn.connect();
     try {
-      await conn.query(this.dropSql, { params: [id] });
+      await conn.query(
+        `
+        DELETE FROM ${this.table} 
+        WHERE id = $1
+        `,
+        { params: [id] },
+      );
     } finally {
       await conn.close();
     }
+  }
+
+  /**
+   * Convert an array of entity property values that have been returned from the
+   * database into a JavaScript object with property names and values.
+   *
+   * [1, 2, 3] -> {a: 1, b: 2, c: 3}
+   */
+  protected hydrateEntity(row: unknown[]): T {
+    return Object.fromEntries(
+      row.map<[keyof T, unknown]>((value, i) => [
+        i === 0 ? "id" : this.props[i - 1],
+        value,
+      ]),
+    ) as T;
   }
 }
 
@@ -109,29 +147,56 @@ class Notes extends Entities<Note> {
    * a note view on the client.
    */
   async selectByPath(path: string): Promise<Note[]> {
-    if (path === "") return this.select();
+    if (path === "") return this.selectAll();
     const ancestorIds = getAncestorIdsFromNotePath(path);
     const ancestorPlaceholders = ancestorIds
       .map((_, i) => `$${i + 1}`)
       .join(", ");
     const likePlaceholder = `$${ancestorIds.length + 1}`;
-    const sql = `
-      SELECT id, content, path 
-      FROM notes 
-      WHERE id IN (${ancestorPlaceholders})
-      UNION
-      SELECT id, content, path
-      FROM notes
-      WHERE path LIKE ${likePlaceholder}
-    `;
     const conn = new Connection(this.connConfig);
     await conn.connect();
     try {
-      const result = await conn.query(sql, {
-        params: [...ancestorIds, `${path}%`],
-      });
+      const result = await conn.query(
+        `
+        SELECT id, ${this.propsList}
+        FROM ${this.table}
+        WHERE id IN (${ancestorPlaceholders})
+        UNION
+        SELECT id, ${this.propsList}
+        FROM ${this.table}
+        WHERE path LIKE ${likePlaceholder}
+        `,
+        { params: [...ancestorIds, `${path}%`] },
+      );
       if (result.rows === undefined) throw "No rows returned.";
-      return this.hydrateEntities(result.rows);
+      return result.rows.map(this.hydrateEntity.bind(this));
+    } finally {
+      await conn.close();
+    }
+  }
+
+  /**
+   * Drop a note entity and all its descendant children note entities.
+   */
+  async dropRecursively(note: Note): Promise<void> {
+    const path = `${note.path}${note.path ? "/" : ""}${note.id}`;
+    const conn = new Connection(this.connConfig);
+    await conn.connect();
+    try {
+      await conn.query(
+        `
+        DELETE FROM ${this.table} 
+        WHERE id = $1
+        `,
+        { params: [note.id] },
+      );
+      await conn.query(
+        `
+        DELETE FROM ${this.table} 
+        WHERE path LIKE $1
+        `,
+        { params: [`${path}%`] },
+      );
     } finally {
       await conn.close();
     }
@@ -141,11 +206,19 @@ class Notes extends Entities<Note> {
 /**
  * Schema
  */
-export type Note = { id: string; content: string; path: string };
 const connConfig = {
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
 };
-export const notes = new Notes("notes", ["content", "path"], connConfig);
+export type Note = { id: string; content: string; likes: number; path: string };
+export const notes = new Notes(
+  "notes",
+  ["content", "likes", "path"],
+  connConfig,
+);
+export type Like = { id: string; noteId: string; userId: number };
+export const likes = new Likes("likes", ["noteId", "userId"], connConfig);
+export type User = { id: string; name: string };
+export const users = new Entities<User>("users", ["name"], connConfig);

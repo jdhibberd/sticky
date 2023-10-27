@@ -14,10 +14,10 @@ test("no notes", async () => {
 test(`simple view with ancestors, children, and children with children`, async () => {
   const path = "a";
   const nodes = {
-    a: { id: "a", content: "xxx", path: "" },
-    b: { id: "b", content: "xxx", path: "a" },
-    c: { id: "c", content: "xxx", path: "a" },
-    d: { id: "d", content: "xxx", path: "a/b" },
+    a: { id: "a", content: "xxx", likes: 0, path: "" },
+    b: { id: "b", content: "xxx", likes: 0, path: "a" },
+    c: { id: "c", content: "xxx", likes: 0, path: "a" },
+    d: { id: "d", content: "xxx", likes: 0, path: "a/b" },
   };
   expect(buildNoteViewData(path, Object.values(nodes))).toStrictEqual({
     ancestors: [nodes.a],

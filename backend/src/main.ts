@@ -25,6 +25,7 @@ app.use("/api", bodyParser.json());
 
 app.post("/api/notes", async (req, res) => {
   await notes.upsert(req.body);
+  res.status(201);
   res.end();
 });
 
@@ -39,11 +40,19 @@ app.get(
 
 app.put("/api/notes", async (req, res) => {
   await notes.upsert(req.body);
+  res.status(204);
   res.end();
 });
 
 app.delete("/api/notes/:id", async (req, res) => {
-  await notes.drop(req.params.id);
+  const note = await notes.selectById(req.params.id);
+  if (note === null) {
+    res.status(404);
+    res.end();
+    return;
+  }
+  await notes.dropRecursively(note);
+  res.status(204);
   res.end();
 });
 

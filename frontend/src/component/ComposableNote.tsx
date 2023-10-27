@@ -7,12 +7,10 @@ export default function ComposableNote() {
   const onKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.code === "Enter") {
       event.preventDefault();
-      const content = state;
-      const path = getNotePath();
       await fetch("/api/notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content, path }),
+        body: JSON.stringify({ content: state, likes: 0, path: getNotePath() }),
       });
       setState("");
       dispatchEvent(new Event("notesChanged"));
