@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import type { NoteViewData } from "@/backend/note-view-data.js";
+import type { NotePageModel } from "@/backend/model/note-page.js";
 import ComposableNote from "./ComposableNote.js";
 import EditableNote from "./EditableNote.js";
 import AncestorNote from "./AncestorNote.js";
 import { getNotePath } from "../lib/util.js";
 
 export default function App() {
-  const [state, setState] = useState<NoteViewData>();
+  const [state, setState] = useState<NotePageModel>();
 
   useEffect(() => {
     addEventListener("notesChanged", onNotesChanged);
@@ -49,12 +49,8 @@ export default function App() {
     <>
       {renderAncestors()}
       <div className="note-container">
-        {state.children.map((note) => (
-          <EditableNote
-            key={note.id}
-            note={note}
-            hasChildren={state.childrenWithChildren.includes(note.id)}
-          />
+        {state.notes.map((note) => (
+          <EditableNote key={note.id} note={note} />
         ))}
         <ComposableNote />
       </div>

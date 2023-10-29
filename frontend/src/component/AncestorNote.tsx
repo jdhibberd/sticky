@@ -1,5 +1,5 @@
 import React from "react";
-import type { Note } from "@/backend/entity.js";
+import type { Note } from "@/backend/entity/notes.js";
 import { navigateToNote } from "../lib/util.js";
 
 type Props = {

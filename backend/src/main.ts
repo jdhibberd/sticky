@@ -1,8 +1,9 @@
 import express, { NextFunction, Request, Response } from "express";
 import { engine } from "express-handlebars";
-import { notes } from "./lib/entity.js";
+import { likes } from "./lib/entity/likes.js";
+import { notes } from "./lib/entity/notes.js";
 import bodyParser from "body-parser";
-import { buildNoteViewData } from "./lib/note-view-data.js";
+import { buildNotePageModel } from "./lib/model/note-page.js";
 
 const app = express();
 
@@ -23,6 +24,12 @@ app.use("/api", bodyParser.json());
  * API
  */
 
+app.post("/api/likes", async (req, res) => {
+  await likes.insert(req.body.noteId, process.env.USER_ID!);
+  res.status(201);
+  res.end();
+});
+
 app.post("/api/notes", async (req, res) => {
   await notes.upsert(req.body);
   res.status(201);
@@ -32,8 +39,12 @@ app.post("/api/notes", async (req, res) => {
 app.get(
   "/api/notes",
   async (req: Request<object, object, object, { path: string }>, res) => {
-    const entities = await notes.selectByPath(req.query.path);
-    const data = buildNoteViewData(req.query.path, entities);
+    const path = req.query.path;
+    const userId = process.env.USER_ID!;
+    const notesByPath = await notes.selectByPath(path);
+    const notesIds = notesByPath.map((note) => note.id);
+    const likesByNoteIds = await likes.selectByNoteIds(userId, notesIds);
+    const data = buildNotePageModel(path, notesByPath, likesByNoteIds);
     res.json(data);
   },
 );

@@ -1,4 +1,4 @@
-import type { Note } from "@/backend/entity.js";
+import type { Note } from "@/backend/entity/notes.js";
 
 /**
  * Return the path of current note view.

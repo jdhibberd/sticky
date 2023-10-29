@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import type { Note } from "@/backend/entity.js";
+import type { Note } from "@/backend/model/note-page.js";
 import { navigateToNote } from "../lib/util.js";
 
 type Props = {
   note: Note;
-  hasChildren?: boolean;
 };
 
 type State = {
@@ -13,7 +12,7 @@ type State = {
   isEditing: boolean;
 };
 
-export default function EditableNote({ note, hasChildren = false }: Props) {
+export default function EditableNote({ note }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [state, setState] = useState<State>({
@@ -58,10 +57,10 @@ export default function EditableNote({ note, hasChildren = false }: Props) {
   };
 
   const onLikesClick = async () => {
-    await fetch("/api/notes", {
-      method: "PUT",
+    await fetch("/api/likes", {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...note, likes: note.likes + 1 }),
+      body: JSON.stringify({ noteId: note.id }),
     });
     dispatchEvent(new Event("notesChanged"));
   };
@@ -159,11 +158,11 @@ export default function EditableNote({ note, hasChildren = false }: Props) {
       <div className="footer">
         <div className="author">John</div>
         <div className="buttons">
-          <button onClick={onLikesClick}>{note.likes}</button>
+          <button onClick={onLikesClick}>{note.likeCount}</button>
           {renderMutateButton()}
         </div>
       </div>
-      {hasChildren && <div className="shadow" />}
+      {note.hasChildren && <div className="shadow" />}
     </div>
   );
 }
