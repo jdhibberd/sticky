@@ -26,7 +26,7 @@ test(`simple view with ancestors, children, and children with children`, async (
       { noteId: "b", count: 7 },
       { noteId: "d", count: 2 },
     ],
-    likesByUser: [{ noteId: "d", id: "f" }],
+    likesByUser: ["d"],
   };
   expect(buildNotePageModel(path, Object.values(nodes), likes)).toStrictEqual({
     ancestors: [{ id: "a", content: "xxx", path: "" }],
@@ -37,7 +37,7 @@ test(`simple view with ancestors, children, and children with children`, async (
         path: "a",
         hasChildren: true,
         likeCount: 7,
-        likedByUser: null,
+        likedByUser: false,
       },
       {
         id: "c",
@@ -45,7 +45,7 @@ test(`simple view with ancestors, children, and children with children`, async (
         path: "a",
         hasChildren: false,
         likeCount: 0,
-        likedByUser: null,
+        likedByUser: false,
       },
       {
         id: "d",
@@ -53,7 +53,7 @@ test(`simple view with ancestors, children, and children with children`, async (
         path: "a",
         hasChildren: false,
         likeCount: 2,
-        likedByUser: "f",
+        likedByUser: true,
       },
     ],
   });

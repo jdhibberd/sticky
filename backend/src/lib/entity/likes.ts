@@ -1,10 +1,9 @@
 import { Query, ParamBuilder } from "./util.js";
 
 type LikeCount = { noteId: string; count: number };
-type LikeByUser = { id: string; noteId: string };
 export type LikesByNoteIds = {
   likeCounts: LikeCount[];
-  likesByUser: LikeByUser[];
+  likesByUser: string[];
 };
 
 class Likes {
@@ -12,17 +11,17 @@ class Likes {
    * Register a user liking a note. This is idempotent so multiple likes by a
    * user of the same note are ignored.
    */
-  async insert(note_id: string, user_id: string): Promise<void> {
+  async insert(userId: string, noteId: string): Promise<void> {
     const query = new Query();
     await query.start();
     try {
       await query.exec(
         `
-        INSERT INTO likes (id, note_id, user_id) 
-        VALUES($1, $2, $3)
-        ON CONFLICT (note_id, user_id) DO NOTHING
+        INSERT INTO likes (user_id, note_id) 
+        VALUES($1, $2)
+        ON CONFLICT (user_id, note_id) DO NOTHING
         `,
-        [crypto.randomUUID(), note_id, user_id],
+        [userId, noteId],
       );
     } finally {
       await query.end();
@@ -45,16 +44,16 @@ class Likes {
       const [likeCounts, likesByUser] = await Promise.all([
         query.select<LikeCount>(
           `
-          SELECT note_id, COUNT(id)
+          SELECT note_id, COUNT(user_id)
           FROM likes
           WHERE note_id IN (${param1.insert(noteIds.length)})
           GROUP BY note_id
           `,
           noteIds,
         ),
-        query.select<LikeByUser>(
+        query.selectArray<string>(
           `
-          SELECT id, note_id
+          SELECT note_id
           FROM likes
           WHERE note_id IN (${param2.insert(noteIds.length)}) AND
           user_id = $1
@@ -63,6 +62,25 @@ class Likes {
         ),
       ]);
       return { likeCounts, likesByUser };
+    } finally {
+      await query.end();
+    }
+  }
+
+  /**
+   * Remove a user's like from a note.
+   */
+  async drop(userId: string, noteId: string): Promise<void> {
+    const query = new Query();
+    await query.start();
+    try {
+      await query.exec(
+        `
+        DELETE FROM likes
+        WHERE user_id = $1 AND note_id = $2
+        `,
+        [userId, noteId],
+      );
     } finally {
       await query.end();
     }

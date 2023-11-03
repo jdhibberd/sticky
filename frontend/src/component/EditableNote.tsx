@@ -56,12 +56,22 @@ export default function EditableNote({ note }: Props) {
     });
   };
 
+  /**
+   * Clicking the "like" button will toggle between a like being added and
+   * removed by the current user on the note.
+   */
   const onLikesClick = async () => {
-    await fetch("/api/likes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ noteId: note.id }),
-    });
+    if (note.likedByUser) {
+      await fetch(`/api/likes/${note.id}`, {
+        method: "DELETE",
+      });
+    } else {
+      await fetch("/api/likes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ noteId: note.id }),
+      });
+    }
     dispatchEvent(new Event("notesChanged"));
   };
 
@@ -121,6 +131,17 @@ export default function EditableNote({ note }: Props) {
     }
   };
 
+  const renderLikeButton = () => {
+    return (
+      <button
+        className={note.likedByUser ? "like-liked" : ""}
+        onClick={onLikesClick}
+      >
+        {note.likeCount}
+      </button>
+    );
+  };
+
   const renderMutateButton = () => {
     if (state.isEditing) {
       return (
@@ -158,7 +179,7 @@ export default function EditableNote({ note }: Props) {
       <div className="footer">
         <div className="author">John</div>
         <div className="buttons">
-          <button onClick={onLikesClick}>{note.likeCount}</button>
+          {renderLikeButton()}
           {renderMutateButton()}
         </div>
       </div>

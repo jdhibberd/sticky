@@ -4,7 +4,7 @@ import type { LikesByNoteIds } from "../entity/likes.js";
 type NoteEntityExtra = {
   hasChildren: boolean;
   likeCount: number;
-  likedByUser: string | null;
+  likedByUser: boolean;
 };
 export type Note = NoteEntity & NoteEntityExtra;
 export type NotePageModel = {
@@ -42,15 +42,13 @@ export function buildNotePageModel(
   const likeCounts = new Map(
     likes.likeCounts.map((entry) => [entry.noteId, entry.count]),
   );
-  const likesByUser = new Map(
-    likes.likesByUser.map((entry) => [entry.noteId, entry.id]),
-  );
+  const likesByUser = new Set(likes.likesByUser);
   const notes = notesDirectChildren.map((note: NoteEntity) =>
     Object.assign<NoteEntityExtra, NoteEntity>(
       {
         hasChildren: parents.has(note.id),
         likeCount: likeCounts.get(note.id) ?? 0,
-        likedByUser: likesByUser.get(note.id) ?? null,
+        likedByUser: likesByUser.has(note.id),
       },
       note,
     ),

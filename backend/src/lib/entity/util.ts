@@ -66,6 +66,23 @@ export class Query {
     );
   }
 
+  /**
+   * Execute a SELECT query and return a flattened array of values.
+   *
+   * [[1], [2], [3]]
+   * ->
+   * [1, 2, 3]
+   */
+  async selectArray<T>(
+    sql: string,
+    params: (string | number)[] = [],
+  ): Promise<T[]> {
+    const result = await this.conn.query(sql, { params });
+    return result.rows === undefined
+      ? []
+      : result.rows.map((row: unknown[]) => row[0]);
+  }
+
   async end(): Promise<void> {
     await this.conn.close();
   }

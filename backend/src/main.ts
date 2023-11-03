@@ -25,8 +25,14 @@ app.use("/api", bodyParser.json());
  */
 
 app.post("/api/likes", async (req, res) => {
-  await likes.insert(req.body.noteId, process.env.USER_ID!);
+  await likes.insert(process.env.USER_ID!, req.body.noteId);
   res.status(201);
+  res.end();
+});
+
+app.delete("/api/likes/:id", async (req, res) => {
+  await likes.drop(process.env.USER_ID!, req.params.id);
+  res.status(204);
   res.end();
 });
 

@@ -9,8 +9,7 @@ CREATE TABLE notes (
   "path" TEXT NOT NULL
 );
 CREATE TABLE likes (
-  "id" UUID PRIMARY KEY,
+  "user_id" UUID NOT NULL,  
   "note_id" UUID NOT NULL,
-  "user_id" UUID NOT NULL,
-  UNIQUE("note_id", "user_id")
+  PRIMARY KEY ("user_id", "note_id")
 );
