@@ -3,6 +3,15 @@ import { getAncestorIdsFromNotePath } from "../model/note-page.js";
 import crypto from "crypto";
 
 class Notes {
+  private static _schema = `
+    CREATE TABLE notes (
+      id UUID PRIMARY KEY,
+      author_id UUID NOT NULL,
+      content TEXT NOT NULL,
+      path TEXT NOT NULL
+    )
+    `;
+
   /**
    * Insert a new entity into the database, or update an existing entity in the
    * database. If the entity contains an `id` property then an update will be
@@ -27,7 +36,7 @@ class Notes {
         await query.exec(
           `
           INSERT INTO notes (id, content, path) 
-          VALUES($1, $2, $3)
+          VALUES ($1, $2, $3)
           `,
           [crypto.randomUUID(), ...values],
         );

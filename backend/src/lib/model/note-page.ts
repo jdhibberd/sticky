@@ -10,6 +10,7 @@ export type Note = NoteEntity & NoteEntityExtra;
 export type NotePageModel = {
   ancestors: NoteEntity[];
   notes: Note[];
+  user: { name: string };
 };
 
 /**
@@ -27,6 +28,7 @@ export function buildNotePageModel(
   path: string,
   notesByPath: NoteEntity[],
   likes: LikesByNoteIds,
+  userName: string,
 ): NotePageModel {
   const notesById = new Map<string, NoteEntity>(
     notesByPath.map((note) => [note.id, note]),
@@ -53,5 +55,5 @@ export function buildNotePageModel(
       note,
     ),
   );
-  return { ancestors, notes };
+  return { ancestors, notes, user: { name: userName } };
 }

@@ -58,11 +58,51 @@ export class Query {
   async select<T>(sql: string, params: (string | number)[] = []): Promise<T[]> {
     const result = await this.conn.query(sql, { params });
     const rows = result.rows === undefined ? [] : result.rows;
-    const camelCaseFields = result.fields.map((field: { fieldName: string }) =>
-      field.fieldName.replace(/(_\w)/g, (k) => k[1].toUpperCase()),
-    );
+    const camelCaseFields = this.getCamelCaseFields(result.fields);
     return rows.map((row: unknown[]) =>
       Object.fromEntries(row.map((value, i) => [camelCaseFields[i], value])),
+    );
+  }
+
+  /**
+   * Execute a SELECT query and hydrate the single result row into a JavaScript
+   * object using the fields names returned by the result object to determine
+   * the object property names. Also converts "snake case" database field names
+   * to "camel case" JavaScript object property names.
+   *
+   * [[1, 2, 3]]
+   * ->
+   * {a: 1, b: 2, c: 3}
+   */
+  async selectOne<T>(
+    sql: string,
+    params: (string | number)[] = [],
+  ): Promise<T | null> {
+    const result = await this.conn.query(sql, { params });
+    if (result.rows === undefined || result.rows.length == 0) {
+      return null;
+    }
+    const camelCaseFields = this.getCamelCaseFields(result.fields);
+    return Object.fromEntries(
+      result.rows[0].map((value: unknown, i: number) => [
+        camelCaseFields[i],
+        value,
+      ]),
+    ) as T;
+  }
+
+  /**
+   * Convert snake case database field names to camel case JavaScript object
+   * property names. The field names are included in the database query
+   * response object.
+   *
+   * [{fieldName: a_b}, {fieldName: d_e}]
+   * ->
+   * ["aB", "dE"]
+   */
+  private getCamelCaseFields(fields: { fieldName: string }[]): string[] {
+    return fields.map((field) =>
+      field.fieldName.replace(/(_\w)/g, (k) => k[1].toUpperCase()),
     );
   }
 

@@ -43,7 +43,7 @@
 }
 
 .note > .footer {
-  background-color: aquamarine;
+  background-color: var(--primary-color);
   display: flex;
   flex-direction: row;
   height: 38px;
@@ -75,7 +75,7 @@
 }
 
 .note > .footer > .buttons > button:hover {
-  background-color: rgba(0, 0, 0, 0.16);
+  background-color: var(--highlight-color);
   border-radius: 3px;
 }
 

@@ -1,3 +1,8 @@
+:root {
+  --primary-color: aquamarine;
+  --highlight-color: rgb(114, 230, 191);
+}
+
 body {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 16px;

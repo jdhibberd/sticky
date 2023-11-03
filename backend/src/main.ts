@@ -4,6 +4,8 @@ import { likes } from "./lib/entity/likes.js";
 import { notes } from "./lib/entity/notes.js";
 import bodyParser from "body-parser";
 import { buildNotePageModel } from "./lib/model/note-page.js";
+import cookieParser from "cookie-parser";
+import * as auth from "./lib/auth.js";
 
 const app = express();
 
@@ -17,7 +19,11 @@ app.set("views", "./dist/views");
 /**
  * Middleware
  */
+
 app.use(express.static("./dist/public"));
+app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use("/api", auth.handler);
+app.use("/login", bodyParser.json());
 app.use("/api", bodyParser.json());
 
 /**
@@ -42,18 +48,20 @@ app.post("/api/notes", async (req, res) => {
   res.end();
 });
 
-app.get(
-  "/api/notes",
-  async (req: Request<object, object, object, { path: string }>, res) => {
-    const path = req.query.path;
-    const userId = process.env.USER_ID!;
-    const notesByPath = await notes.selectByPath(path);
-    const notesIds = notesByPath.map((note) => note.id);
-    const likesByNoteIds = await likes.selectByNoteIds(userId, notesIds);
-    const data = buildNotePageModel(path, notesByPath, likesByNoteIds);
-    res.json(data);
-  },
-);
+app.get("/api/notes", async (req, res) => {
+  const path = req.query.path as string;
+  const userId = process.env.USER_ID!;
+  const notesByPath = await notes.selectByPath(path);
+  const notesIds = notesByPath.map((note) => note.id);
+  const likesByNoteIds = await likes.selectByNoteIds(userId, notesIds);
+  const data = buildNotePageModel(
+    path,
+    notesByPath,
+    likesByNoteIds,
+    req.session.name,
+  );
+  res.json(data);
+});
 
 app.put("/api/notes", async (req, res) => {
   await notes.upsert(req.body);
@@ -78,7 +86,13 @@ app.delete("/api/notes/:id", async (req, res) => {
  */
 
 app.get("/", async (req, res) => {
-  res.render("home");
+  const session = await auth.getSession(req);
+  res.render(session === null ? "unauth" : "app");
+});
+
+app.post("/login", async (req, res) => {
+  await auth.newSession(res, req.body.name);
+  res.end();
 });
 
 app.use((_req, res) => {

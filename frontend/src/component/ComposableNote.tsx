@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import { getNotePath } from "../lib/util.js";
 
-export default function ComposableNote() {
+type Props = {
+  name: string;
+};
+
+export default function ComposableNote({ name }: Props) {
   const [state, setState] = useState<string>("");
 
   const onKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -27,7 +31,7 @@ export default function ComposableNote() {
         <textarea onChange={onChange} onKeyDown={onKeyDown} value={state} />
       </div>
       <div className="footer">
-        <div className="author">John</div>
+        <div className="author">{name}</div>
       </div>
     </div>
   );

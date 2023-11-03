@@ -7,6 +7,14 @@ export type LikesByNoteIds = {
 };
 
 class Likes {
+  private static _schema = `
+    CREATE TABLE likes (
+      user_id UUID NOT NULL,  
+      note_id UUID NOT NULL,
+      PRIMARY KEY (user_id, note_id)
+    )
+    `;
+
   /**
    * Register a user liking a note. This is idempotent so multiple likes by a
    * user of the same note are ignored.

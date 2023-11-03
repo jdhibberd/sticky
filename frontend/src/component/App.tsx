@@ -52,7 +52,7 @@ export default function App() {
         {state.notes.map((note) => (
           <EditableNote key={note.id} note={note} />
         ))}
-        <ComposableNote />
+        <ComposableNote name={state.user.name} />
       </div>
     </>
   );

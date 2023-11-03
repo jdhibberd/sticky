@@ -6,9 +6,11 @@ test("no notes", async () => {
   const path = "";
   const notes: Note[] = [];
   const likes: LikesByNoteIds = { likeCounts: [], likesByUser: [] };
-  expect(buildNotePageModel(path, notes, likes)).toStrictEqual({
+  const userName = "foo";
+  expect(buildNotePageModel(path, notes, likes, userName)).toStrictEqual({
     ancestors: [],
     notes: [],
+    user: { name: "foo" },
   });
 });
 
@@ -28,7 +30,10 @@ test(`simple view with ancestors, children, and children with children`, async (
     ],
     likesByUser: ["d"],
   };
-  expect(buildNotePageModel(path, Object.values(nodes), likes)).toStrictEqual({
+  const userName = "foo";
+  expect(
+    buildNotePageModel(path, Object.values(nodes), likes, userName),
+  ).toStrictEqual({
     ancestors: [{ id: "a", content: "xxx", path: "" }],
     notes: [
       {
@@ -56,5 +61,6 @@ test(`simple view with ancestors, children, and children with children`, async (
         likedByUser: true,
       },
     ],
+    user: { name: "foo" },
   });
 });
