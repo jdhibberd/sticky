@@ -1,4 +1,4 @@
-import { ParamBuilder } from "../util.js";
+import { ParamBuilder } from "../db.js";
 
 test("ParamBuilder basic", async () => {
   const param = new ParamBuilder();

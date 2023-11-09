@@ -1,4 +1,4 @@
-import { Query, ParamBuilder } from "./util.js";
+import { exec, select, selectOne, ParamBuilder } from "./db.js";
 import { getAncestorIdsFromNotePath } from "../model/note-page.js";
 import crypto from "crypto";
 
@@ -6,7 +6,6 @@ class Notes {
   private static _schema = `
     CREATE TABLE notes (
       id UUID PRIMARY KEY,
-      author_id UUID NOT NULL,
       content TEXT NOT NULL,
       path TEXT NOT NULL
     )
@@ -19,30 +18,24 @@ class Notes {
    * new generated id and insert will be performed.
    */
   async upsert(note: Note): Promise<void> {
-    const query = new Query();
-    await query.start();
-    try {
-      const values = [note.content, note.path];
-      if ("id" in note) {
-        await query.exec(
-          `
-          UPDATE notes
-          SET content = $2, path = $3
-          WHERE id = $1
-          `,
-          [note.id, ...values],
-        );
-      } else {
-        await query.exec(
-          `
-          INSERT INTO notes (id, content, path) 
-          VALUES ($1, $2, $3)
-          `,
-          [crypto.randomUUID(), ...values],
-        );
-      }
-    } finally {
-      await query.end();
+    const values = [note.content, note.path];
+    if ("id" in note) {
+      await exec(
+        `
+        UPDATE notes
+        SET content = $2, path = $3
+        WHERE id = $1
+        `,
+        [note.id, ...values],
+      );
+    } else {
+      await exec(
+        `
+        INSERT INTO notes (id, content, path) 
+        VALUES ($1, $2, $3)
+        `,
+        [crypto.randomUUID(), ...values],
+      );
     }
   }
 
@@ -52,94 +45,69 @@ class Notes {
    */
   async selectByPath(path: string): Promise<Note[]> {
     if (path === "") return this.selectAll();
-    const query = new Query();
-    await query.start();
-    try {
-      const ancestorIds = getAncestorIdsFromNotePath(path);
-      const param = new ParamBuilder();
-      return await query.select(
-        `
-        SELECT id, content, path
-        FROM notes
-        WHERE id IN (${param.insert(ancestorIds.length)})
-        UNION
-        SELECT id, content, path
-        FROM notes
-        WHERE path LIKE ${param.insert()}
-        `,
-        [...ancestorIds, `${path}%`],
-      );
-    } finally {
-      await query.end();
-    }
+    const ancestorIds = getAncestorIdsFromNotePath(path);
+    const param = new ParamBuilder();
+    return await select(
+      `
+      SELECT id, content, path
+      FROM notes
+      WHERE id IN (${param.insert(ancestorIds.length)})
+      UNION
+      SELECT id, content, path
+      FROM notes
+      WHERE path LIKE ${param.insert()}
+      `,
+      [...ancestorIds, `${path}%`],
+    );
   }
 
   /**
-   * Read all entities (of a common type) from the database.
+   * Read all notes.
    */
   async selectAll(): Promise<Note[]> {
-    const query = new Query();
-    await query.start();
-    try {
-      return await query.select<Note>(
-        `
-        SELECT id, content, path
-        FROM notes
-        `,
-      );
-    } finally {
-      await query.end();
-    }
+    return await select<Note>(
+      `
+      SELECT id, content, path
+      FROM notes
+      `,
+    );
   }
 
   /**
-   * Read all entities (of a common type) from the database.
+   * Read a single note by its id.
    */
   async selectById(id: string): Promise<Note | null> {
-    const query = new Query();
-    await query.start();
-    try {
-      const result = await query.select<Note>(
-        `
-        SELECT id, content, path
-        FROM notes
-        WHERE id = $1
-        `,
-        [id],
-      );
-      return result.length === 0 ? null : result[0];
-    } finally {
-      await query.end();
-    }
+    return await selectOne<Note>(
+      `
+      SELECT id, content, path
+      FROM notes
+      WHERE id = $1
+      `,
+      [id],
+    );
   }
 
   /**
    * Drop a note entity and all its descendant children note entities.
    */
   async dropRecursively(note: Note): Promise<void> {
-    const query = new Query();
-    await query.start();
-    try {
-      const path = `${note.path}${note.path ? "/" : ""}${note.id}`;
-      await Promise.all([
-        query.exec(
-          `
-          DELETE FROM notes
-          WHERE id = $1
-          `,
-          [note.id],
-        ),
-        query.exec(
-          `
-          DELETE FROM notes
-          WHERE path LIKE $1
-          `,
-          [`${path}%`],
-        ),
-      ]);
-    } finally {
-      await query.end();
-    }
+    const path = `${note.path}${note.path ? "/" : ""}${note.id}`;
+    await Promise.all([
+      exec(
+        `
+        DELETE FROM notes
+        WHERE id = $1
+        `,
+        [note.id],
+      ),
+      exec(
+        `
+        DELETE FROM notes
+        WHERE path LIKE $1
+        `,
+        [`${path}%`],
+      ),
+    ]);
   }
 }
 

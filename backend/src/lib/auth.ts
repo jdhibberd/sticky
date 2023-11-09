@@ -17,14 +17,18 @@ declare module "express-serve-static-core" {
  * no further handling of the request.
  */
 export async function handler(req: Request, res: Response, next: NextFunction) {
-  const session = await getSession(req);
-  if (session === null) {
-    res.status(401);
-    res.end();
-    return;
+  try {
+    const session = await getSession(req);
+    if (session === null) {
+      res.status(401);
+      res.end();
+      return;
+    }
+    req.session = session;
+    next();
+  } catch (err) {
+    next(err);
   }
-  req.session = session;
-  next();
 }
 
 /**
