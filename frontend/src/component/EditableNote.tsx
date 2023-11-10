@@ -84,7 +84,11 @@ export default function EditableNote({ note }: Props) {
       await fetch("/api/notes", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...note, content: state.contentDraft }),
+        body: JSON.stringify({
+          id: note.id,
+          path: note.path,
+          content: state.contentDraft,
+        }),
       });
       dispatchEvent(new Event("notesChanged"));
       setState((prevState) => {

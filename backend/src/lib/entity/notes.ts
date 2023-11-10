@@ -17,24 +17,31 @@ class Notes {
    * performed, otherwise an `id` property will be added to the entity with a
    * new generated id and insert will be performed.
    */
-  async upsert(note: Note): Promise<void> {
-    const values = [note.content, note.path];
-    if ("id" in note) {
+  async upsert({
+    content,
+    path,
+    id,
+  }: {
+    content: string;
+    path: string;
+    id?: string;
+  }): Promise<void> {
+    if (id === undefined) {
+      await exec(
+        `
+        INSERT INTO notes (id, content, path) 
+        VALUES ($1, $2, $3)
+        `,
+        [crypto.randomUUID(), content, path],
+      );
+    } else {
       await exec(
         `
         UPDATE notes
         SET content = $2, path = $3
         WHERE id = $1
         `,
-        [note.id, ...values],
-      );
-    } else {
-      await exec(
-        `
-        INSERT INTO notes (id, content, path) 
-        VALUES ($1, $2, $3)
-        `,
-        [crypto.randomUUID(), ...values],
+        [id, content, path],
       );
     }
   }

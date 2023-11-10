@@ -14,7 +14,7 @@ export default function ComposableNote({ name }: Props) {
       await fetch("/api/notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: state, likes: 0, path: getNotePath() }),
+        body: JSON.stringify({ content: state, path: getNotePath() }),
       });
       setState("");
       dispatchEvent(new Event("notesChanged"));

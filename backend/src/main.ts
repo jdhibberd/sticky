@@ -6,6 +6,8 @@ import bodyParser from "body-parser";
 import { buildNotePageModel } from "./lib/model/note-page.js";
 import cookieParser from "cookie-parser";
 import * as auth from "./lib/auth.js";
+import api_notes_post_handler from "./lib/handlers/api/notes/post.js";
+import api_notes_put_handler from "./lib/handlers/api/notes/put.js";
 import { closeDbConnections } from "./lib/entity/db.js";
 
 const app = express();
@@ -36,8 +38,8 @@ app.post("/api/likes", async (req, res, next) => {
     await likes.insert(process.env.USER_ID!, req.body.noteId);
     res.status(201);
     res.end();
-  } catch (err) {
-    next(err);
+  } catch (e) {
+    next(e);
   }
 });
 
@@ -46,18 +48,8 @@ app.delete("/api/likes/:id", async (req, res, next) => {
     await likes.drop(process.env.USER_ID!, req.params.id);
     res.status(204);
     res.end();
-  } catch (err) {
-    next(err);
-  }
-});
-
-app.post("/api/notes", async (req, res, next) => {
-  try {
-    await notes.upsert(req.body);
-    res.status(201);
-    res.end();
-  } catch (err) {
-    next(err);
+  } catch (e) {
+    next(e);
   }
 });
 
@@ -75,20 +67,13 @@ app.get("/api/notes", async (req, res, next) => {
       req.session.name,
     );
     res.json(data);
-  } catch (err) {
-    next(err);
+  } catch (e) {
+    next(e);
   }
 });
 
-app.put("/api/notes", async (req, res, next) => {
-  try {
-    await notes.upsert(req.body);
-    res.status(204);
-    res.end();
-  } catch (err) {
-    next(err);
-  }
-});
+app.use(api_notes_post_handler);
+app.use(api_notes_put_handler);
 
 app.delete("/api/notes/:id", async (req, res, next) => {
   try {
@@ -101,8 +86,8 @@ app.delete("/api/notes/:id", async (req, res, next) => {
     await notes.dropRecursively(note);
     res.status(204);
     res.end();
-  } catch (err) {
-    next(err);
+  } catch (e) {
+    next(e);
   }
 });
 
@@ -114,8 +99,8 @@ app.get("/", async (req, res, next) => {
   try {
     const session = await auth.getSession(req);
     res.render(session === null ? "unauth" : "app");
-  } catch (err) {
-    next(err);
+  } catch (e) {
+    next(e);
   }
 });
 
@@ -123,8 +108,8 @@ app.post("/login", async (req, res, next) => {
   try {
     await auth.newSession(res, req.body.name);
     res.end();
-  } catch (err) {
-    next(err);
+  } catch (e) {
+    next(e);
   }
 });
 
