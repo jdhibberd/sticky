@@ -16,7 +16,11 @@ declare module "express-serve-static-core" {
  * of subsequent handlers. If they don't then an error is returned and there is
  * no further handling of the request.
  */
-export async function handler(req: Request, res: Response, next: NextFunction) {
+export async function authRequest(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const session = await getSession(req);
     if (session === null) {

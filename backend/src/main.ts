@@ -1,13 +1,16 @@
 import express, { NextFunction, Request, Response } from "express";
 import { engine } from "express-handlebars";
-import { likes } from "./lib/entity/likes.js";
-import { notes } from "./lib/entity/notes.js";
 import bodyParser from "body-parser";
-import { buildNotePageModel } from "./lib/model/note-page.js";
 import cookieParser from "cookie-parser";
-import * as auth from "./lib/auth.js";
+import { authRequest } from "./lib/auth.js";
+import api_likes_post_handler from "./lib/handlers/api/likes/post.js";
+import api_likes_delete_handler from "./lib/handlers/api/likes/delete.js";
+import api_notes_get_handler from "./lib/handlers/api/notes/get.js";
 import api_notes_post_handler from "./lib/handlers/api/notes/post.js";
 import api_notes_put_handler from "./lib/handlers/api/notes/put.js";
+import api_notes_delete_handler from "./lib/handlers/api/notes/delete.js";
+import www_get_handler from "./lib/handlers/www/get.js";
+import www_login_post_handler from "./lib/handlers/www/login/post.js";
 import { closeDbConnections } from "./lib/entity/db.js";
 
 const app = express();
@@ -25,7 +28,7 @@ app.set("views", "./dist/views");
 
 app.use(express.static("./dist/public"));
 app.use(cookieParser(process.env.COOKIE_SECRET));
-app.use("/api", auth.handler);
+app.use("/api", authRequest);
 app.use("/login", bodyParser.json());
 app.use("/api", bodyParser.json());
 
@@ -33,85 +36,18 @@ app.use("/api", bodyParser.json());
  * API
  */
 
-app.post("/api/likes", async (req, res, next) => {
-  try {
-    await likes.insert(process.env.USER_ID!, req.body.noteId);
-    res.status(201);
-    res.end();
-  } catch (e) {
-    next(e);
-  }
-});
-
-app.delete("/api/likes/:id", async (req, res, next) => {
-  try {
-    await likes.drop(process.env.USER_ID!, req.params.id);
-    res.status(204);
-    res.end();
-  } catch (e) {
-    next(e);
-  }
-});
-
-app.get("/api/notes", async (req, res, next) => {
-  try {
-    const path = req.query.path as string;
-    const userId = process.env.USER_ID!;
-    const notesByPath = await notes.selectByPath(path);
-    const notesIds = notesByPath.map((note) => note.id);
-    const likesByNoteIds = await likes.selectByNoteIds(userId, notesIds);
-    const data = buildNotePageModel(
-      path,
-      notesByPath,
-      likesByNoteIds,
-      req.session.name,
-    );
-    res.json(data);
-  } catch (e) {
-    next(e);
-  }
-});
-
+app.use(api_likes_post_handler);
+app.use(api_likes_delete_handler);
+app.use(api_notes_get_handler);
 app.use(api_notes_post_handler);
 app.use(api_notes_put_handler);
-
-app.delete("/api/notes/:id", async (req, res, next) => {
-  try {
-    const note = await notes.selectById(req.params.id);
-    if (note === null) {
-      res.status(404);
-      res.end();
-      return;
-    }
-    await notes.dropRecursively(note);
-    res.status(204);
-    res.end();
-  } catch (e) {
-    next(e);
-  }
-});
+app.use(api_notes_delete_handler);
+app.use(www_get_handler);
+app.use(www_login_post_handler);
 
 /**
  * Server
  */
-
-app.get("/", async (req, res, next) => {
-  try {
-    const session = await auth.getSession(req);
-    res.render(session === null ? "unauth" : "app");
-  } catch (e) {
-    next(e);
-  }
-});
-
-app.post("/login", async (req, res, next) => {
-  try {
-    await auth.newSession(res, req.body.name);
-    res.end();
-  } catch (e) {
-    next(e);
-  }
-});
 
 app.use((_req, res) => {
   res.status(404);

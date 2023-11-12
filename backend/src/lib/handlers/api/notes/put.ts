@@ -1,6 +1,9 @@
 import { type Request, Router } from "express";
 import { notes } from "../../../entity/notes.js";
-import * as validation from "../../../validation.js";
+import {
+  compileValidationSchema,
+  validateRequest,
+} from "../../../validation.js";
 
 type Payload = {
   id: string;
@@ -8,11 +11,11 @@ type Payload = {
   path: string;
 };
 
-const validate = validation.compile<Payload>({
+const validate = compileValidationSchema<Payload>({
   type: "object",
   properties: {
-    id: { type: "string" },
-    content: { type: "string", maxLength: 160 },
+    id: { type: "string", format: "uuid" },
+    content: { type: "string", minLength: 1, maxLength: 160 },
     path: { type: "string", maxLength: 1024 },
   },
   required: ["id", "content", "path"],
@@ -20,7 +23,7 @@ const validate = validation.compile<Payload>({
 });
 
 export default Router()
-  .put("/api/notes", validation.handler(validate))
+  .put("/api/notes", validateRequest(validate))
   .put(
     "/api/notes",
     async (req: Request<object, object, Payload>, res, next) => {

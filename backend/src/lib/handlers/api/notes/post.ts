@@ -1,16 +1,19 @@
 import { type Request, Router } from "express";
 import { notes } from "../../../entity/notes.js";
-import * as validation from "../../../validation.js";
+import {
+  compileValidationSchema,
+  validateRequest,
+} from "../../../validation.js";
 
 type Payload = {
   content: string;
   path: string;
 };
 
-const validate = validation.compile<Payload>({
+const validate = compileValidationSchema<Payload>({
   type: "object",
   properties: {
-    content: { type: "string", maxLength: 160 },
+    content: { type: "string", minLength: 1, maxLength: 160 },
     path: { type: "string", maxLength: 1024 },
   },
   required: ["content", "path"],
@@ -18,7 +21,7 @@ const validate = validation.compile<Payload>({
 });
 
 export default Router()
-  .post("/api/notes", validation.handler(validate))
+  .post("/api/notes", validateRequest(validate))
   .post(
     "/api/notes",
     async (req: Request<object, object, Payload>, res, next) => {

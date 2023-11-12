@@ -1,5 +1,5 @@
 import { type Request, Router } from "express";
-import { likes } from "../../../entity/likes.js";
+import { notes } from "../../../entity/notes.js";
 import {
   compileValidationSchema,
   validateRequest,
@@ -19,10 +19,16 @@ const validate = compileValidationSchema<Payload>({
 });
 
 export default Router()
-  .delete("/api/likes/:id", validateRequest(validate, "params"))
-  .delete("/api/likes/:id", async (req: Request<Payload>, res, next) => {
+  .delete("/api/notes/:id", validateRequest(validate, "params"))
+  .delete("/api/notes/:id", async (req: Request<Payload>, res, next) => {
     try {
-      await likes.drop(process.env.USER_ID!, req.params.id);
+      const note = await notes.selectById(req.params.id);
+      if (note === null) {
+        res.status(404);
+        res.end();
+        return;
+      }
+      await notes.dropRecursively(note);
       res.status(204);
       res.end();
     } catch (e) {
