@@ -4,7 +4,7 @@ import {
   compileValidationSchema,
   validateRequest,
 } from "../../../validation.js";
-import { NAME_LEN } from "../../../entity/sessions.js";
+import { NAME_MAXLEN } from "../../../entity/sessions.js";
 
 type Payload = {
   name: string;
@@ -13,7 +13,7 @@ type Payload = {
 const validate = compileValidationSchema<Payload>({
   type: "object",
   properties: {
-    name: { type: "string", minLength: 2, maxLength: NAME_LEN },
+    name: { type: "string", minLength: 2, maxLength: NAME_MAXLEN },
   },
   required: ["name"],
   additionalProperties: false,

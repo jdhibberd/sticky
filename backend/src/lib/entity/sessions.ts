@@ -2,13 +2,13 @@ import { exec, selectOne } from "./db.js";
 import crypto from "crypto";
 
 export type Session = { name: string };
-export const NAME_LEN = 32;
+export const NAME_MAXLEN = 32;
 
 class Sessions {
   private static _schema = `
     CREATE TABLE sessions (
       id UUID PRIMARY KEY,
-      name VARCHAR(${NAME_LEN}) NOT NULL
+      name VARCHAR(${NAME_MAXLEN}) NOT NULL
     )   
     `;
 

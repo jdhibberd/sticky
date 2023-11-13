@@ -1,11 +1,6 @@
-// QUIRK: the default import isn't working as documented
-// https://github.com/ajv-validator/ajv/issues/2132
-import Ajv, { JSONSchemaType, ValidateFunction } from "ajv";
+import Ajv, { JSONSchemaType, KeywordDefinition, ValidateFunction } from "ajv";
 import formatsPlugin from "ajv-formats";
 import { RequestHandler } from "express";
-
-const ajv = new Ajv.default({ allErrors: true });
-formatsPlugin.default(ajv);
 
 /**
  * Helper function for compiling a validation schema, that abstracts away the
@@ -41,3 +36,15 @@ export function validateRequest(
     }
   };
 }
+
+/**
+ * Register custom validation functions.
+ */
+export function addCustomValidation(keyword: KeywordDefinition) {
+  ajv.addKeyword(keyword);
+}
+
+// QUIRK: the default import isn't working as documented
+// https://github.com/ajv-validator/ajv/issues/2132
+const ajv = new Ajv.default({ allErrors: true });
+formatsPlugin.default(ajv);

@@ -4,7 +4,11 @@ import {
   compileValidationSchema,
   validateRequest,
 } from "../../../validation.js";
-import { CONTENT_LEN, PATH_LEN } from "../../../entity/notes.js";
+import {
+  CONTENT_MAXLEN,
+  PATH_MAXLEN,
+  PATH_MAXDEPTH,
+} from "../../../entity/notes.js";
 
 type Payload = {
   id: string;
@@ -16,8 +20,12 @@ const validate = compileValidationSchema<Payload>({
   type: "object",
   properties: {
     id: { type: "string", format: "uuid" },
-    content: { type: "string", minLength: 1, maxLength: CONTENT_LEN },
-    path: { type: "string", maxLength: PATH_LEN },
+    content: { type: "string", minLength: 1, maxLength: CONTENT_MAXLEN },
+    path: {
+      type: "string",
+      maxLength: PATH_MAXLEN,
+      maxPathDepth: PATH_MAXDEPTH,
+    },
   },
   required: ["id", "content", "path"],
   additionalProperties: false,

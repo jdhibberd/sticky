@@ -1,16 +1,18 @@
 import { exec, select, selectOne, ParamBuilder } from "./db.js";
 import { getAncestorIdsFromNotePath } from "../model/note-page.js";
+import { addCustomValidation } from "../validation.js";
 import crypto from "crypto";
 
-export const CONTENT_LEN = 128;
-export const PATH_LEN = 1024;
+export const CONTENT_MAXLEN = 128;
+export const PATH_MAXLEN = 1024;
+export const PATH_MAXDEPTH = 5;
 
 class Notes {
   private static _schema = `
     CREATE TABLE notes (
       id UUID PRIMARY KEY,
-      content VARCHAR(${CONTENT_LEN}) NOT NULL,
-      path VARCHAR(${PATH_LEN}) NOT NULL
+      content VARCHAR(${CONTENT_MAXLEN}) NOT NULL,
+      path VARCHAR(${PATH_MAXLEN}) NOT NULL
     )
     `;
 
@@ -123,3 +125,12 @@ class Notes {
 
 export type Note = { id: string; content: string; path: string };
 export const notes = new Notes();
+
+/**
+ * A custom validator to check the depth of the path field.
+ */
+addCustomValidation({
+  keyword: "maxPathDepth",
+  type: "string",
+  validate: (schema: number, data: string) => data.split("/").length < schema,
+});
