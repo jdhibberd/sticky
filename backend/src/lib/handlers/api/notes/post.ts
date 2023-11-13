@@ -4,6 +4,7 @@ import {
   compileValidationSchema,
   validateRequest,
 } from "../../../validation.js";
+import { CONTENT_LEN, PATH_LEN } from "../../../entity/notes.js";
 
 type Payload = {
   content: string;
@@ -13,8 +14,8 @@ type Payload = {
 const validate = compileValidationSchema<Payload>({
   type: "object",
   properties: {
-    content: { type: "string", minLength: 1, maxLength: 160 },
-    path: { type: "string", maxLength: 1024 },
+    content: { type: "string", minLength: 1, maxLength: CONTENT_LEN },
+    path: { type: "string", maxLength: PATH_LEN },
   },
   required: ["content", "path"],
   additionalProperties: false,

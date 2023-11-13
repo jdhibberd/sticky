@@ -2,12 +2,15 @@ import { exec, select, selectOne, ParamBuilder } from "./db.js";
 import { getAncestorIdsFromNotePath } from "../model/note-page.js";
 import crypto from "crypto";
 
+export const CONTENT_LEN = 128;
+export const PATH_LEN = 1024;
+
 class Notes {
   private static _schema = `
     CREATE TABLE notes (
       id UUID PRIMARY KEY,
-      content TEXT NOT NULL,
-      path TEXT NOT NULL
+      content VARCHAR(${CONTENT_LEN}) NOT NULL,
+      path VARCHAR(${PATH_LEN}) NOT NULL
     )
     `;
 

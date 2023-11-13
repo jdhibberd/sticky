@@ -38,6 +38,9 @@ class Likes {
     userId: string,
     noteIds: string[],
   ): Promise<LikesByNoteIds> {
+    if (noteIds.length === 0) {
+      return { likeCounts: [], likesByUser: [] };
+    }
     const param1 = new ParamBuilder();
     const param2 = new ParamBuilder(1);
     const [likeCounts, likesByUser] = await Promise.all([
