@@ -1,14 +1,13 @@
 import React from "react";
-import type { Note } from "@/backend/entity/notes.js";
-import { navigateToNote } from "../lib/util.js";
+import type { AncestorNote } from "@/backend/model/note-page.js";
 
 type Props = {
-  note: Note;
+  note: AncestorNote;
 };
 
 export default function AncestorNote({ note }: Props) {
   const onContentClick = () => {
-    navigateToNote(note, true);
+    window.location.hash = note.parentId || "";
   };
 
   return (

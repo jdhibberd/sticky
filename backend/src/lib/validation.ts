@@ -1,4 +1,4 @@
-import Ajv, { JSONSchemaType, KeywordDefinition, ValidateFunction } from "ajv";
+import Ajv, { JSONSchemaType, ValidateFunction } from "ajv";
 import formatsPlugin from "ajv-formats";
 import { RequestHandler } from "express";
 
@@ -37,14 +37,13 @@ export function validateRequest(
   };
 }
 
-/**
- * Register custom validation functions.
- */
-export function addCustomValidation(keyword: KeywordDefinition) {
-  ajv.addKeyword(keyword);
-}
-
 // QUIRK: the default import isn't working as documented
 // https://github.com/ajv-validator/ajv/issues/2132
 const ajv = new Ajv.default({ allErrors: true });
 formatsPlugin.default(ajv);
+
+/**
+ * Raised when a entity model rule is violated, typically in response to a bad
+ * request from the client.
+ */
+export class IntegrityError extends Error {}

@@ -4,16 +4,11 @@ import {
   compileValidationSchema,
   validateRequest,
 } from "../../../validation.js";
-import {
-  CONTENT_MAXLEN,
-  PATH_MAXLEN,
-  PATH_MAXDEPTH,
-} from "../../../entity/notes.js";
+import { CONTENT_MAXLEN } from "../../../entity/notes.js";
 
 type Payload = {
   id: string;
   content: string;
-  path: string;
 };
 
 const validate = compileValidationSchema<Payload>({
@@ -21,13 +16,8 @@ const validate = compileValidationSchema<Payload>({
   properties: {
     id: { type: "string", format: "uuid" },
     content: { type: "string", minLength: 1, maxLength: CONTENT_MAXLEN },
-    path: {
-      type: "string",
-      maxLength: PATH_MAXLEN,
-      maxPathDepth: PATH_MAXDEPTH,
-    },
   },
-  required: ["id", "content", "path"],
+  required: ["id", "content"],
   additionalProperties: false,
 });
 
@@ -37,7 +27,8 @@ export default Router()
     "/api/notes",
     async (req: Request<object, object, Payload>, res, next) => {
       try {
-        await notes.upsert(req.body);
+        const { id, content } = req.body;
+        await notes.update(id, content);
         res.status(204);
         res.end();
       } catch (e) {

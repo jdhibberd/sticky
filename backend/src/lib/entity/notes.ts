@@ -1,14 +1,16 @@
 import { exec, select, selectOne, ParamBuilder } from "./db.js";
-import { getAncestorIdsFromNotePath } from "../model/note-page.js";
-import { addCustomValidation } from "../validation.js";
 import crypto from "crypto";
+import { NotePath } from "../util.js";
 
 // @frontend-export NOTE
 export const CONTENT_MAXLEN = 128;
 // @frontend-export NOTE
-export const PATH_MAXLEN = 1024;
-// @frontend-export NOTE
 export const PATH_MAXDEPTH = 5;
+
+// maximum path length is determined by the length of a uuid string (36 bytes)
+// multiplied by the max path depth, also allowing for a delimiter char between
+// uuids
+export const PATH_MAXLEN = 36 * PATH_MAXDEPTH + (PATH_MAXDEPTH - 1);
 
 class Notes {
   private static _schema = `
@@ -21,38 +23,30 @@ class Notes {
     `;
 
   /**
-   * Insert a new entity into the database, or update an existing entity in the
-   * database. If the entity contains an `id` property then an update will be
-   * performed, otherwise an `id` property will be added to the entity with a
-   * new generated id and insert will be performed.
+   * Insert a new note.
    */
-  async upsert({
-    content,
-    path,
-    id,
-  }: {
-    content: string;
-    path: string;
-    id?: string;
-  }): Promise<void> {
-    if (id === undefined) {
-      await exec(
-        `
-        INSERT INTO notes (id, content, path, modified) 
-        VALUES ($1, $2, $3, 'now')
-        `,
-        [crypto.randomUUID(), content, path],
-      );
-    } else {
-      await exec(
-        `
-        UPDATE notes
-        SET content = $2, path = $3, modified = 'now'
-        WHERE id = $1
-        `,
-        [id, content, path],
-      );
-    }
+  async insert(path: string, content: string): Promise<void> {
+    await exec(
+      `
+      INSERT INTO notes (id, content, path, modified) 
+      VALUES ($1, $2, $3, 'now')
+      `,
+      [crypto.randomUUID(), content, path],
+    );
+  }
+
+  /**
+   * Update an existing note.
+   */
+  async update(id: string, content: string): Promise<void> {
+    await exec(
+      `
+      UPDATE notes
+      SET content = $2, modified = 'now'
+      WHERE id = $1
+      `,
+      [id, content],
+    );
   }
 
   /**
@@ -60,8 +54,16 @@ class Notes {
    * a note view on the client.
    */
   async selectByPath(path: string): Promise<Note[]> {
-    if (path === "") return this.selectAll();
-    const ancestorIds = getAncestorIdsFromNotePath(path);
+    if (path === "") {
+      return await select<Note>(
+        `
+        SELECT id, content, path, modified
+        FROM notes
+        WHERE path = ''
+        `,
+      );
+    }
+    const ancestorIds = NotePath.split(path);
     const param = new ParamBuilder();
     return await select(
       `
@@ -71,21 +73,9 @@ class Notes {
       UNION
       SELECT id, content, path, modified
       FROM notes
-      WHERE path LIKE ${param.insert()}
+      WHERE path = ${param.insert()}
       `,
-      [...ancestorIds, `${path}%`],
-    );
-  }
-
-  /**
-   * Read all notes.
-   */
-  async selectAll(): Promise<Note[]> {
-    return await select<Note>(
-      `
-      SELECT id, content, path, modified
-      FROM notes
-      `,
+      [...ancestorIds, path],
     );
   }
 
@@ -134,12 +124,3 @@ export type Note = {
   modified: number;
 };
 export const notes = new Notes();
-
-/**
- * A custom validator to check the depth of the path field.
- */
-addCustomValidation({
-  keyword: "maxPathDepth",
-  type: "string",
-  validate: (schema: number, data: string) => data.split("/").length < schema,
-});

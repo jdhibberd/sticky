@@ -9,6 +9,7 @@ test("no notes", async () => {
   const userName = "foo";
   expect(buildNotePageModel(path, notes, likes, userName)).toStrictEqual({
     ancestors: [],
+    parentId: null,
     notes: [],
     user: { name: "foo" },
   });
@@ -18,10 +19,10 @@ test(`simple view with ancestors, children, and children with children`, async (
   const path = "a";
   const nodes: Note[] = [
     { id: "a", content: "xxx", path: "", modified: 0 },
-    { id: "b", content: "xxx", path: "a", modified: 0 },
-    { id: "c", content: "xxx", path: "a", modified: 0 },
-    { id: "d", content: "xxx", path: "a", modified: 0 },
-    { id: "e", content: "xxx", path: "a/b", modified: 0 },
+    { id: "b", content: "xxx", path: "a", modified: 1 },
+    { id: "c", content: "xxx", path: "a", modified: 2 },
+    { id: "d", content: "xxx", path: "a", modified: 3 },
+    { id: "e", content: "xxx", path: "a/b", modified: 4 },
   ];
   const likes: LikesByNoteIds = {
     likeCounts: [
@@ -34,34 +35,26 @@ test(`simple view with ancestors, children, and children with children`, async (
   expect(
     buildNotePageModel(path, Object.values(nodes), likes, userName),
   ).toStrictEqual({
-    ancestors: [{ id: "a", content: "xxx", path: "", modified: 0 }],
+    ancestors: [{ id: "a", content: "xxx", parentId: null }],
+    parentId: "a",
     notes: [
       {
         id: "b",
         content: "xxx",
-        path: "a",
-        modified: 0,
-        hasChildren: true,
         likeCount: 7,
-        likedByUser: false,
-      },
-      {
-        id: "c",
-        content: "xxx",
-        path: "a",
-        modified: 0,
-        hasChildren: false,
-        likeCount: 0,
         likedByUser: false,
       },
       {
         id: "d",
         content: "xxx",
-        path: "a",
-        modified: 0,
-        hasChildren: false,
         likeCount: 2,
         likedByUser: true,
+      },
+      {
+        id: "c",
+        content: "xxx",
+        likeCount: 0,
+        likedByUser: false,
       },
     ],
     user: { name: "foo" },

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { getNotePath } from "../lib/util.js";
 import { NOTE_CONTENT_MAXLEN } from "../lib/backend-const.gen.js";
 
 type Props = {
   name: string;
+  parentId: string | null;
 };
 
-export default function ComposableNote({ name }: Props) {
+export default function ComposableNote({ name, parentId }: Props) {
   const [state, setState] = useState<string>("");
 
   const onKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -18,7 +18,7 @@ export default function ComposableNote({ name }: Props) {
       await fetch("/api/notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: state, path: getNotePath() }),
+        body: JSON.stringify({ content: state, parentId: parentId }),
       });
       setState("");
       dispatchEvent(new Event("notesChanged"));
@@ -29,12 +29,17 @@ export default function ComposableNote({ name }: Props) {
     setState(event.target.value);
   };
 
+  const onBlur = () => {
+    setState("");
+  };
+
   return (
     <div className="note">
       <div className="content content-editable">
         <textarea
           onChange={onChange}
           onKeyDown={onKeyDown}
+          onBlur={onBlur}
           value={state}
           maxLength={NOTE_CONTENT_MAXLEN}
         />

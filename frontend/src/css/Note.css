@@ -86,15 +86,3 @@
 .note > .footer > .buttons > button.like-liked {
   font-weight: bold;
 }
-
-.note > .shadow {
-  --offset: 3px;
-  z-index: -1;
-  position: absolute;
-  top: var(--offset);
-  left: var(--offset);
-  border: solid 2px black;
-  border-radius: 3px;
-  width: var(--size);
-  height: var(--size);
-}

@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import type { Note } from "@/backend/model/note-page.js";
-import { navigateToNote } from "../lib/util.js";
 import { NOTE_CONTENT_MAXLEN } from "../lib/backend-const.gen.js";
 
 type Props = {
@@ -48,7 +47,7 @@ export default function EditableNote({ note }: Props) {
   };
 
   const onContentClick = () => {
-    navigateToNote(note);
+    window.location.hash = note.id;
   };
 
   const onEditClick = () => {
@@ -88,11 +87,7 @@ export default function EditableNote({ note }: Props) {
       await fetch("/api/notes", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: note.id,
-          path: note.path,
-          content: state.contentDraft,
-        }),
+        body: JSON.stringify({ id: note.id, content: state.contentDraft }),
       });
       dispatchEvent(new Event("notesChanged"));
       setState((prevState) => {
@@ -192,7 +187,6 @@ export default function EditableNote({ note }: Props) {
           {renderMutateButton()}
         </div>
       </div>
-      {note.hasChildren && <div className="shadow" />}
     </div>
   );
 }

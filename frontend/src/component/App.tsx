@@ -3,7 +3,6 @@ import type { NotePageModel } from "@/backend/model/note-page.js";
 import ComposableNote from "./ComposableNote.js";
 import EditableNote from "./EditableNote.js";
 import AncestorNote from "./AncestorNote.js";
-import { getNotePath } from "../lib/util.js";
 import PlaceholderNote from "./PlaceholderNote.js";
 import { NOTE_PATH_MAXDEPTH } from "../lib/backend-const.gen.js";
 
@@ -25,8 +24,9 @@ export default function App() {
   };
 
   const fetchData = async () => {
-    const path = getNotePath();
-    const response = await fetch(`/api/notes?path=${path}`);
+    const hash = window.location.hash;
+    const qs = hash === "" ? "" : `?id=${hash.substring(1)}`;
+    const response = await fetch(`/api/notes${qs}`);
     const result = await response.json();
     setState(result);
   };
@@ -35,7 +35,8 @@ export default function App() {
     if (!state?.ancestors.length) {
       return null;
     }
-    const placeholderCount = NOTE_PATH_MAXDEPTH - state.ancestors.length;
+    // -1 because the final depth will be the notes under the ancestors
+    const placeholderCount = NOTE_PATH_MAXDEPTH - state.ancestors.length - 1;
     return (
       <div className="note-container note-container-ancestors">
         {state.ancestors.map((note) => (
@@ -58,7 +59,7 @@ export default function App() {
         {state.notes.map((note) => (
           <EditableNote key={note.id} note={note} />
         ))}
-        <ComposableNote name={state.user.name} />
+        <ComposableNote name={state.user.name} parentId={state.parentId} />
       </div>
     </>
   );

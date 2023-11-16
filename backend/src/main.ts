@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { authRequest } from "./lib/auth.js";
 import { closeDbConnections } from "./lib/entity/db.js";
 import registerHandlers from "./lib/routes.gen.js";
+import { IntegrityError } from "./lib/validation.js";
 
 const app = express();
 
@@ -36,9 +37,14 @@ app.use((_req, res) => {
 app.use(
   "/api",
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  (err: Error, req: Request, res: Response, next: NextFunction): void => {
-    console.error(err.message);
-    console.error(err.stack);
+  (e: Error, req: Request, res: Response, next: NextFunction): void => {
+    if (e instanceof IntegrityError) {
+      res.status(400);
+      res.json({ error: e.message });
+      return;
+    }
+    console.error(e.message);
+    console.error(e.stack);
     res.status(500);
     res.json({ error: true });
   },
