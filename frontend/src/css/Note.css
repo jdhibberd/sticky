@@ -10,6 +10,10 @@
   position: relative;
 }
 
+.note-placeholder {
+  border-color: var(--framework-color);
+}
+
 /* the entire note is a link */
 .note-link {
   cursor: pointer;

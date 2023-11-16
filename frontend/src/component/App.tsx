@@ -4,6 +4,8 @@ import ComposableNote from "./ComposableNote.js";
 import EditableNote from "./EditableNote.js";
 import AncestorNote from "./AncestorNote.js";
 import { getNotePath } from "../lib/util.js";
+import PlaceholderNote from "./PlaceholderNote.js";
+import { NOTE_PATH_MAXDEPTH } from "../lib/backend-const.gen.js";
 
 export default function App() {
   const [state, setState] = useState<NotePageModel>();
@@ -33,10 +35,14 @@ export default function App() {
     if (!state?.ancestors.length) {
       return null;
     }
+    const placeholderCount = NOTE_PATH_MAXDEPTH - state.ancestors.length;
     return (
       <div className="note-container note-container-ancestors">
         {state.ancestors.map((note) => (
           <AncestorNote key={note.id} note={note} />
+        ))}
+        {[...Array(placeholderCount).keys()].map((i) => (
+          <PlaceholderNote key={`placeholder-${i}`} />
         ))}
       </div>
     );

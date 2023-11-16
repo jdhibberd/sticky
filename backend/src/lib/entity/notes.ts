@@ -3,8 +3,11 @@ import { getAncestorIdsFromNotePath } from "../model/note-page.js";
 import { addCustomValidation } from "../validation.js";
 import crypto from "crypto";
 
+// @frontend-export NOTE
 export const CONTENT_MAXLEN = 128;
+// @frontend-export NOTE
 export const PATH_MAXLEN = 1024;
+// @frontend-export NOTE
 export const PATH_MAXDEPTH = 5;
 
 class Notes {
@@ -12,7 +15,8 @@ class Notes {
     CREATE TABLE notes (
       id UUID PRIMARY KEY,
       content VARCHAR(${CONTENT_MAXLEN}) NOT NULL,
-      path VARCHAR(${PATH_MAXLEN}) NOT NULL
+      path VARCHAR(${PATH_MAXLEN}) NOT NULL,
+      modified TIMESTAMP NOT NULL
     )
     `;
 
@@ -34,8 +38,8 @@ class Notes {
     if (id === undefined) {
       await exec(
         `
-        INSERT INTO notes (id, content, path) 
-        VALUES ($1, $2, $3)
+        INSERT INTO notes (id, content, path, modified) 
+        VALUES ($1, $2, $3, 'now')
         `,
         [crypto.randomUUID(), content, path],
       );
@@ -43,7 +47,7 @@ class Notes {
       await exec(
         `
         UPDATE notes
-        SET content = $2, path = $3
+        SET content = $2, path = $3, modified = 'now'
         WHERE id = $1
         `,
         [id, content, path],
@@ -61,11 +65,11 @@ class Notes {
     const param = new ParamBuilder();
     return await select(
       `
-      SELECT id, content, path
+      SELECT id, content, path, modified
       FROM notes
       WHERE id IN (${param.insert(ancestorIds.length)})
       UNION
-      SELECT id, content, path
+      SELECT id, content, path, modified
       FROM notes
       WHERE path LIKE ${param.insert()}
       `,
@@ -79,7 +83,7 @@ class Notes {
   async selectAll(): Promise<Note[]> {
     return await select<Note>(
       `
-      SELECT id, content, path
+      SELECT id, content, path, modified
       FROM notes
       `,
     );
@@ -91,7 +95,7 @@ class Notes {
   async selectById(id: string): Promise<Note | null> {
     return await selectOne<Note>(
       `
-      SELECT id, content, path
+      SELECT id, content, path, modified
       FROM notes
       WHERE id = $1
       `,
@@ -123,7 +127,12 @@ class Notes {
   }
 }
 
-export type Note = { id: string; content: string; path: string };
+export type Note = {
+  id: string;
+  content: string;
+  path: string;
+  modified: number;
+};
 export const notes = new Notes();
 
 /**

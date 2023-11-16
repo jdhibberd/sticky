@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { SESSION_NAME_MAXLEN } from "../lib/backend-const.gen.js";
 
 export default function Unauth() {
   const [state, setState] = useState<string>("");
@@ -8,6 +9,9 @@ export default function Unauth() {
   };
 
   const onLoginClick = async () => {
+    if (state.length === 0) {
+      return;
+    }
     await fetch("/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -22,7 +26,12 @@ export default function Unauth() {
         <h1>Sticky</h1>
         <div className="name">
           <div className="label">Your name:</div>
-          <input type="text" onChange={onNameChange} value={state}></input>
+          <input
+            type="text"
+            onChange={onNameChange}
+            value={state}
+            maxLength={SESSION_NAME_MAXLEN}
+          ></input>
         </div>
         <button onClick={onLoginClick}>Login</button>
       </div>

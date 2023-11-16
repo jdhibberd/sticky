@@ -12,3 +12,4 @@ Often the best way to create a maintainable and verifiable codebase is to automa
   cd backend
   npx prettier . --check
   ```
+- Each codegen should be able to perform the code analysis it needs without having to transpile a codebase (which would be slow). Limit analysis to file system queries, regex, etc.

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import type { Note } from "@/backend/model/note-page.js";
 import { navigateToNote } from "../lib/util.js";
+import { NOTE_CONTENT_MAXLEN } from "../lib/backend-const.gen.js";
 
 type Props = {
   note: Note;
@@ -81,6 +82,9 @@ export default function EditableNote({ note }: Props) {
       // suppress the usual behaviour which is to add a newline to the end of
       // the content
       event.preventDefault();
+      if (state.contentDraft!.length === 0) {
+        return;
+      }
       await fetch("/api/notes", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -123,6 +127,7 @@ export default function EditableNote({ note }: Props) {
             onKeyDown={onTextareaKeyDown}
             onBlur={onTextareaBlur}
             value={state.contentDraft}
+            maxLength={NOTE_CONTENT_MAXLEN}
           />
         </div>
       );

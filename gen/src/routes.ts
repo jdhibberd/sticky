@@ -5,20 +5,10 @@
 
 import fs from "fs";
 import path from "path";
+import { walkSync } from "./util";
 
 const TARGET = "../backend/src/lib/routes.gen.ts";
 const HANDLER_DIR = "../backend/src/lib/handlers";
-
-function* walkSync(dir: string): Generator<string> {
-  const files = fs.readdirSync(dir, { withFileTypes: true });
-  for (const file of files) {
-    if (file.isDirectory()) {
-      yield* walkSync(path.join(dir, file.name));
-    } else {
-      yield path.join(dir, file.name);
-    }
-  }
-}
 
 const handlers = Array.from(walkSync(HANDLER_DIR));
 const f = fs.createWriteStream(TARGET);

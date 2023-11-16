@@ -17,11 +17,11 @@ test("no notes", async () => {
 test(`simple view with ancestors, children, and children with children`, async () => {
   const path = "a";
   const nodes: Note[] = [
-    { id: "a", content: "xxx", path: "" },
-    { id: "b", content: "xxx", path: "a" },
-    { id: "c", content: "xxx", path: "a" },
-    { id: "d", content: "xxx", path: "a" },
-    { id: "e", content: "xxx", path: "a/b" },
+    { id: "a", content: "xxx", path: "", modified: 0 },
+    { id: "b", content: "xxx", path: "a", modified: 0 },
+    { id: "c", content: "xxx", path: "a", modified: 0 },
+    { id: "d", content: "xxx", path: "a", modified: 0 },
+    { id: "e", content: "xxx", path: "a/b", modified: 0 },
   ];
   const likes: LikesByNoteIds = {
     likeCounts: [
@@ -34,12 +34,13 @@ test(`simple view with ancestors, children, and children with children`, async (
   expect(
     buildNotePageModel(path, Object.values(nodes), likes, userName),
   ).toStrictEqual({
-    ancestors: [{ id: "a", content: "xxx", path: "" }],
+    ancestors: [{ id: "a", content: "xxx", path: "", modified: 0 }],
     notes: [
       {
         id: "b",
         content: "xxx",
         path: "a",
+        modified: 0,
         hasChildren: true,
         likeCount: 7,
         likedByUser: false,
@@ -48,6 +49,7 @@ test(`simple view with ancestors, children, and children with children`, async (
         id: "c",
         content: "xxx",
         path: "a",
+        modified: 0,
         hasChildren: false,
         likeCount: 0,
         likedByUser: false,
@@ -56,6 +58,7 @@ test(`simple view with ancestors, children, and children with children`, async (
         id: "d",
         content: "xxx",
         path: "a",
+        modified: 0,
         hasChildren: false,
         likeCount: 2,
         likedByUser: true,

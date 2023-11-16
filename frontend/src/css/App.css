@@ -1,6 +1,7 @@
 :root {
   --primary-color: aquamarine;
   --highlight-color: rgb(114, 230, 191);
+  --framework-color: lightgray;
 }
 
 body {
@@ -17,5 +18,5 @@ body {
 }
 
 .note-container-ancestors {
-  border-bottom: dotted 2px black;
+  border-bottom: solid 2px var(--framework-color);
 }
