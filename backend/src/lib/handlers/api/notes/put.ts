@@ -5,6 +5,8 @@ import {
   validateRequest,
 } from "../../../validation.js";
 import { CONTENT_MAXLEN } from "../../../entity/notes.js";
+import { checkNoteExists } from "../../../validation.js";
+import { type Note } from "../../../entity/notes.js";
 
 type Payload = {
   id: string;
@@ -21,6 +23,14 @@ const validate = compileValidationSchema<Payload>({
   additionalProperties: false,
 });
 
+class InterityRuleset {
+  static async check(
+    parentId: string | null | undefined,
+  ): Promise<Note | null> {
+    return await checkNoteExists(parentId);
+  }
+}
+
 export default Router()
   .put("/api/notes", validateRequest(validate))
   .put(
@@ -28,6 +38,7 @@ export default Router()
     async (req: Request<object, object, Payload>, res, next) => {
       try {
         const { id, content } = req.body;
+        await InterityRuleset.check(id);
         await notes.update(id, content);
         res.status(204);
         res.end();

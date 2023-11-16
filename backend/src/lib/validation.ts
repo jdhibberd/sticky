@@ -1,6 +1,8 @@
 import Ajv, { JSONSchemaType, ValidateFunction } from "ajv";
 import formatsPlugin from "ajv-formats";
 import { RequestHandler } from "express";
+import { type Note } from "./entity/notes.js";
+import { notes } from "./entity/notes.js";
 
 /**
  * Helper function for compiling a validation schema, that abstracts away the
@@ -47,3 +49,20 @@ formatsPlugin.default(ajv);
  * request from the client.
  */
 export class IntegrityError extends Error {}
+
+/**
+ * Check that a referenced Note entity exists. If the id is null then skip the
+ * check, which can happen if the 'root' of a note tree is being referenced.
+ */
+export async function checkNoteExists(
+  id: string | null | undefined,
+): Promise<Note | null> {
+  if (id === null || id === undefined) {
+    return null;
+  }
+  const note = await notes.selectById(id);
+  if (note === null) {
+    throw new IntegrityError(`Note entity ${id} not found.`);
+  }
+  return note;
+}

@@ -1,9 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import type { Note } from "@/backend/model/note-page.js";
-import { NOTE_CONTENT_MAXLEN } from "../lib/backend-const.gen.js";
+import {
+  NOTE_CONTENT_MAXLEN,
+  NOTE_PATH_MAXDEPTH,
+} from "../lib/backend-const.gen.js";
 
 type Props = {
   note: Note;
+  depth: number;
 };
 
 type State = {
@@ -12,7 +16,7 @@ type State = {
   isEditing: boolean;
 };
 
-export default function EditableNote({ note }: Props) {
+export default function EditableNote({ note, depth }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [state, setState] = useState<State>({
@@ -126,12 +130,14 @@ export default function EditableNote({ note }: Props) {
           />
         </div>
       );
-    } else {
+    } else if (depth < NOTE_PATH_MAXDEPTH) {
       return (
         <div className="content content-link" onClick={onContentClick}>
           {state.content}
         </div>
       );
+    } else {
+      return <div className="content">{state.content}</div>;
     }
   };
 

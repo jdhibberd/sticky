@@ -8,6 +8,7 @@ import { CONTENT_MAXLEN } from "../../../entity/notes.js";
 import { NotePath } from "../../../util.js";
 import { IntegrityError } from "../../../validation.js";
 import { type Note } from "../../../entity/notes.js";
+import { checkNoteExists } from "../../../validation.js";
 
 type Payload = {
   content: string;
@@ -30,22 +31,8 @@ const validate = compileValidationSchema<Payload>({
 
 class InterityRuleset {
   static async check(parentId: string | null | undefined): Promise<string> {
-    const parentNote = await this.checkParentNoteExists(parentId);
+    const parentNote = await checkNoteExists(parentId);
     return this.checkPathDepth(parentNote);
-  }
-
-  private static async checkParentNoteExists(
-    parentId: string | null | undefined,
-  ): Promise<Note | null> {
-    if (parentId === null || parentId === undefined) {
-      // the note is being added to the root of the tree
-      return null;
-    }
-    const note = await notes.selectById(parentId);
-    if (note === null) {
-      throw new IntegrityError("parent note not found");
-    }
-    return note;
   }
 
   private static checkPathDepth(parentNote: Note | null): string {
@@ -56,7 +43,7 @@ class InterityRuleset {
     const path = NotePath.append(parentNote.path, parentNote.id);
     const depth = NotePath.getDepth(path);
     if (depth >= PATH_MAXDEPTH) {
-      throw new IntegrityError("note max depth exceeded");
+      throw new IntegrityError("Note max depth exceeded.");
     }
     return path;
   }

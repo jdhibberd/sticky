@@ -57,7 +57,11 @@ export default function App() {
       {renderAncestors()}
       <div className="note-container">
         {state.notes.map((note) => (
-          <EditableNote key={note.id} note={note} />
+          <EditableNote
+            key={note.id}
+            note={note}
+            depth={state?.ancestors.length + 1}
+          />
         ))}
         <ComposableNote name={state.user.name} parentId={state.parentId} />
       </div>

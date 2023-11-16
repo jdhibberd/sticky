@@ -7,6 +7,8 @@ import {
   validateRequest,
 } from "../../../validation.js";
 import { NotePath } from "../../../util.js";
+import { checkNoteExists } from "../../../validation.js";
+import { type Note } from "../../../entity/notes.js";
 
 type Payload = {
   id?: string;
@@ -20,25 +22,26 @@ const validate = compileValidationSchema<Payload>({
   additionalProperties: false,
 });
 
+class InterityRuleset {
+  static async check(
+    parentId: string | null | undefined,
+  ): Promise<Note | null> {
+    return await checkNoteExists(parentId);
+  }
+}
+
 export default Router()
   .get("/api/notes", validateRequest(validate, "query"))
   .get(
     "/api/notes",
     async (req: Request<object, object, object, Payload>, res, next) => {
       try {
-        let path;
-        const parentId = req.query.id;
-        if (parentId !== undefined) {
-          const parentNote = await notes.selectById(parentId);
-          if (parentNote === null) {
-            res.status(404);
-            res.json({ error: "not found" });
-            return;
-          }
-          path = NotePath.append(parentNote.path, parentNote.id);
-        } else {
-          path = "";
-        }
+        const { id } = req.query;
+        const parentNote = await InterityRuleset.check(id);
+        const path =
+          parentNote === null
+            ? ""
+            : NotePath.append(parentNote.path, parentNote.id);
         const notesByPath = await notes.selectByPath(path);
         const notesIds = notesByPath.map((note) => note.id);
         const userId = process.env.USER_ID!;
