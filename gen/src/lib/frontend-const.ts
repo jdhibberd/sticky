@@ -15,9 +15,9 @@
  */
 
 import fs from "fs";
-import { walkSync } from "../util";
+import { BACKEND_PATH, FRONTEND_PATH, walkSync } from "../util.js";
 
-const ENTITY_DIR = "../backend/src/lib/entity";
+const ENTITY_DIR = `${BACKEND_PATH}/src/lib/entity`;
 const PATTERN =
   /\/\/ @frontend-export\s(?<ns>[A-Z]+)\n(export\s)?const\s(?<k>[A-Z_]+)\s=\s(?<v>[0-9]+);\n/g;
 
@@ -38,7 +38,7 @@ function gen(f: fs.WriteStream) {
 
 export default {
   id: "frontend-const",
-  output: "../frontend/src/lib/backend-const.gen.ts",
+  output: `${FRONTEND_PATH}/src/lib/backend-const.gen.ts`,
   src: ENTITY_DIR,
   gen,
 };

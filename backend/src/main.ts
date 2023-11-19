@@ -12,10 +12,10 @@ const app = express();
 // rendering engine
 app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
-app.set("views", "./dist/views");
+app.set("views", "./backend/src/views");
 
 // middleware
-app.use(express.static("./dist/public"));
+app.use(express.static("./frontend/dist"));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use("/api", authRequest);
 app.use("/login", bodyParser.json());

@@ -3,4 +3,4 @@ set -e
 npx prettier . --write
 npx eslint src
 rm -rf ./dist
-npx tsc
+npx tsc -b

@@ -1,7 +1,7 @@
-import { walkSync } from "./util";
+import { walkSync } from "./util.js";
 import fs from "fs";
-import frontendConst from "./lib/frontend-const";
-import routes from "./lib/routes";
+import frontendConst from "./lib/frontend-const.js";
+import routes from "./lib/routes.js";
 
 const GREEN_START = "\x1b[32m";
 const GREEN_END = "\x1b[0m";

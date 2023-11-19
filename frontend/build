@@ -2,5 +2,6 @@
 set -e
 npx prettier . --write
 npx eslint src
+rm -rf ./dist
 npx webpack
-cat ./src/css/* > ../backend/dist/public/style.css
+cat ./src/css/* > ./dist/style.css

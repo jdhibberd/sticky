@@ -5,9 +5,9 @@
 
 import fs from "fs";
 import path from "path";
-import { walkSync } from "../util";
+import { BACKEND_PATH, walkSync } from "../util.js";
 
-const HANDLER_DIR = "../backend/src/lib/handlers";
+const HANDLER_DIR = `${BACKEND_PATH}/src/lib/handlers`;
 
 function gen(f: fs.WriteStream) {
   const handlers = Array.from(walkSync(HANDLER_DIR));
@@ -29,7 +29,7 @@ function gen(f: fs.WriteStream) {
 
 export default {
   id: "routes",
-  output: "../backend/src/lib/routes.gen.ts",
+  output: `${BACKEND_PATH}/src/lib/routes.gen.ts`,
   src: HANDLER_DIR,
   gen,
 };

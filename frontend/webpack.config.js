@@ -12,7 +12,7 @@ export default {
   devtool: "inline-source-map",
   output: {
     filename: "[name].js",
-    path: path.resolve(dirname, "../backend/dist/public"),
+    path: path.resolve(dirname, "./dist"),
   },
   resolve: {
     extensions: [".ts", ".tsx", ".js"],
