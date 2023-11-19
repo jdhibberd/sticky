@@ -15,11 +15,9 @@
  */
 
 import fs from "fs";
-import { walkSync } from "./util";
+import { walkSync } from "../util";
 
-const TARGET = "../frontend/src/lib/backend-const.gen.ts";
 const ENTITY_DIR = "../backend/src/lib/entity";
-
 const PATTERN =
   /\/\/ @frontend-export\s(?<ns>[A-Z]+)\n(export\s)?const\s(?<k>[A-Z_]+)\s=\s(?<v>[0-9]+);\n/g;
 
@@ -32,8 +30,15 @@ function* getConsts() {
   }
 }
 
-const f = fs.createWriteStream(TARGET);
-for (const c of getConsts()) {
-  f.write(`export const ${c};\n`);
+function gen(f: fs.WriteStream) {
+  for (const c of getConsts()) {
+    f.write(`export const ${c};\n`);
+  }
 }
-f.close();
+
+export default {
+  id: "frontend-const",
+  output: "../frontend/src/lib/backend-const.gen.ts",
+  src: ENTITY_DIR,
+  gen,
+};

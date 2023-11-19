@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es2020",
     "module": "nodenext",
-    "outDir": "./build",
+    "outDir": "../build/out/gen",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
