@@ -1,4 +1,11 @@
+# macOS filesystem metadata on development machines
 .DS_Store
+
+# package dependencies managed by npm
 node_modules
-dist
+
+# package build artefacts
+*/dist
+
+# environment-specific variables
 backend/.env

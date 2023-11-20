@@ -1,7 +1,0 @@
-#!/bin/bash
-set -e
-npx prettier . --write
-npx eslint src
-rm -rf ./dist
-npx tsc
-node ./dist/main.js

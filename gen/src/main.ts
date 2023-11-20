@@ -14,7 +14,55 @@ type Module = {
   gen: (f: fs.WriteStream) => void;
 };
 
-function getLatestSrcModified(dir: string) {
+/**
+ * Execute each codegen module if any of its source files were modified more
+ * recently than its output file.
+ */
+function main(...modules: Module[]) {
+  modules.forEach((module) => {
+    if (isStale(module)) {
+      console.log(`${GREEN_START}Running codegen ${module.id}${GREEN_END}`);
+      rebuild(module);
+    }
+  });
+}
+
+main(frontendConst, routes);
+
+/**
+ * Determine whether a codegen module's output file is stale (i.e. needs to be
+ * rebuilt).
+ *
+ * A stale state is any of the following:
+ *
+ * - the codegen's output file doesn't yet exist
+ * - the gen package has been rebuilt since the codegen's output file was last
+ *   generated, which means the logic for generating it could have changed even
+ *   though the codegen's source files haven't changed
+ * - any of the codegen's source files have been modified more recently than
+ *   the last time the output file was generated
+ */
+function isStale(module: Module): boolean {
+  if (!fs.existsSync(module.output)) {
+    return true;
+  }
+  const outputFileModified = fs.statSync(module.output).mtimeMs;
+  const genBuildModified = fs.statSync("./dist").mtimeMs;
+  if (genBuildModified >= outputFileModified) {
+    return true;
+  }
+  const sourceModified = getLatestSrcModified(module.src);
+  if (sourceModified >= outputFileModified) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Return the most recent modification time of any file within a dir
+ * recursively.
+ */
+function getLatestSrcModified(dir: string): number {
   let latest = 0;
   for (const file of walkSync(dir)) {
     const mtime = fs.statSync(file).mtimeMs;
@@ -23,16 +71,6 @@ function getLatestSrcModified(dir: string) {
     }
   }
   return latest;
-}
-
-function getTargetModified(path: string) {
-  return fs.existsSync(path) ? fs.statSync(path).mtimeMs : 0;
-}
-
-function isStale(module: Module): boolean {
-  const targetModified = getTargetModified(module.output);
-  const srcModified = getLatestSrcModified(module.src);
-  return srcModified >= targetModified;
 }
 
 /**
@@ -47,18 +85,3 @@ function rebuild(module: Module) {
     f.close();
   }
 }
-
-/**
- * Execute each codegen module if any of its source files were modified more
- * recently than its output file.
- */
-function exec(...modules: Module[]) {
-  modules.forEach((module) => {
-    if (isStale(module)) {
-      console.log(`${GREEN_START}Running codegen ${module.id}${GREEN_END}`);
-      rebuild(module);
-    }
-  });
-}
-
-exec(frontendConst, routes);

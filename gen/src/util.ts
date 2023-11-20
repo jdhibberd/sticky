@@ -5,10 +5,6 @@
 import fs from "fs";
 import path from "path";
 
-// paths will be relative to ./build/out/gen
-export const BACKEND_PATH = "../backend";
-export const FRONTEND_PATH = "../frontend";
-
 /**
  * Return the paths of all files in a directory recursively.
  */
