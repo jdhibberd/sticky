@@ -29,11 +29,13 @@ type Package = "backend" | "frontend" | "gen";
  * Run the high-level steps required to build the application.
  */
 async function main(): Promise<void> {
+  const startTime = performance.now();
   await buildPackageIfStale("gen", []);
   await runCodegen();
   await buildPackageIfStale("backend", ["gen"]);
   await buildPackageIfStale("frontend", ["gen", "backend"]);
-  log("Build complete");
+  const duration = Math.round((performance.now() - startTime) / 1000);
+  log(`Build complete in ${duration}s`);
 }
 
 await main();

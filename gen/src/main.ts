@@ -1,3 +1,33 @@
+/**
+ * Automatically generate code.
+ *
+ * Often the best way to create a maintainable and verifiable codebase is to
+ * automatically generate parts of that codebase using code prompts from other
+ * parts of the codebase. The alternatives are typically to write and maintain
+ * lots of boilerplate code by hand, or use complicated logic to infer behaviour
+ * dynamically at runtime.
+ *
+ * Each 'codegen' is a separate module in the `lib` dir that reads the contents
+ * of one or more source files to generate a single output file.
+ *
+ * All codegens are automatically run by the build system.
+ *
+ * All output files have a `.gen.ts` extension and should be expressed in
+ * TypeScript. These files should never be modified by hand, since any changes
+ * will be overwritten the next time the codegen is run.
+ *
+ * All generated code (despite being technically a derived artefact) should be
+ * checked into source control because it's necessary for the codebase to be
+ * considered valid (i.e. passes the various format/lint/type checks).
+ *
+ * Before committing changes to codegens run the generated output files against
+ * linters, formatters, etc. to ensure there are no warnings.
+ *
+ * Each codegen should be able to perform the code analysis it needs without
+ * having to transpile a codebase (which would be slow). Limit analysis to file
+ * system queries, regex, etc.
+ */
+
 import { walkSync } from "./util.js";
 import fs from "fs";
 import frontendConst from "./lib/frontend-const.js";
