@@ -121,6 +121,7 @@ export default function EditableNote({ note, depth }: Props) {
       return (
         <div className="content content-editable">
           <textarea
+            id="edit-note"
             ref={textareaRef}
             onChange={onTextareaChange}
             onKeyDown={onTextareaKeyDown}

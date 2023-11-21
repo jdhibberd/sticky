@@ -37,6 +37,7 @@ export default function ComposableNote({ name, parentId }: Props) {
     <div className="note">
       <div className="content content-editable">
         <textarea
+          id="compose-note"
           onChange={onChange}
           onKeyDown={onKeyDown}
           onBlur={onBlur}

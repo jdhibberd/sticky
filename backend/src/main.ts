@@ -1,18 +1,13 @@
 import express, { NextFunction, Request, Response } from "express";
-import { engine } from "express-handlebars";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import { authRequest } from "./lib/auth.js";
 import { closeDbConnections } from "./lib/entity/db.js";
 import registerHandlers from "./lib/routes.gen.js";
 import { IntegrityError } from "./lib/validation.js";
+import { getPage } from "./lib/html.js";
 
 const app = express();
-
-// rendering engine
-app.engine("handlebars", engine());
-app.set("view engine", "handlebars");
-app.set("views", "./backend/src/views");
 
 // middleware
 app.use(express.static("./frontend/dist"));
@@ -27,7 +22,7 @@ registerHandlers(app);
 // server
 app.use((_req, res) => {
   res.status(404);
-  res.render("404");
+  res.send(getPage("Not found."));
 });
 
 // QUIRK: express identifies error handlers as functions with 4 parameters,
@@ -55,7 +50,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction): void => {
   console.error(err.message);
   console.error(err.stack);
   res.status(500);
-  res.render("500");
+  res.send(getPage("Server error."));
 });
 
 const server = app.listen(process.env.PORT, () =>
