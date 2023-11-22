@@ -25,8 +25,8 @@ export default function App() {
 
   const fetchData = async () => {
     const hash = window.location.hash;
-    const qs = hash === "" ? "" : `?id=${hash.substring(1)}`;
-    const response = await fetch(`/api/notes${qs}`);
+    const qs = hash === "" ? "" : hash.substring(1);
+    const response = await fetch(`/api/notes?id=${qs}`);
     const result = await response.json();
     setState(result);
   };

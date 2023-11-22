@@ -1,67 +1,38 @@
-import { type Request, Router } from "express";
-import { PATH_MAXDEPTH, notes } from "../../../entity/notes.js";
+import { Router } from "express";
+import { notes, CONTENT_MAXLEN } from "../../../entity/notes.js";
 import {
-  compileValidationSchema,
-  validateRequest,
+  checkProps,
+  checkUUID,
+  checkString,
+  checkNoteExists,
+  checkPathDepth,
 } from "../../../validation.js";
-import { CONTENT_MAXLEN } from "../../../entity/notes.js";
-import { NotePath } from "../../../util.js";
-import { IntegrityError } from "../../../validation.js";
-import { type Note } from "../../../entity/notes.js";
-import { checkNoteExists } from "../../../validation.js";
 
-type Payload = {
-  content: string;
-  parentId?: string | null;
-};
-
-// QUIRK: unable to differentiate between null and undefined, so valid values
-// for a nullable field are the field being present and set to null, or the
-// field not being present and inferred as undefined
-// https://github.com/ajv-validator/ajv/issues/2163
-const validate = compileValidationSchema<Payload>({
-  type: "object",
-  properties: {
-    content: { type: "string", minLength: 1, maxLength: CONTENT_MAXLEN },
-    parentId: { type: "string", format: "uuid", nullable: true },
-  },
-  required: ["content"],
-  additionalProperties: false,
+export default Router().post("/api/notes", async (req, res, next) => {
+  try {
+    const { path, content } = await checkRequest(req.body);
+    await notes.insert(path, content);
+    res.status(201);
+    res.end();
+  } catch (e) {
+    next(e);
+  }
 });
 
-class InterityRuleset {
-  static async check(parentId: string | null | undefined): Promise<string> {
-    const parentNote = await checkNoteExists(parentId);
-    return this.checkPathDepth(parentNote);
-  }
-
-  private static checkPathDepth(parentNote: Note | null): string {
-    if (parentNote === null) {
-      // the note is being added to the root of the tree
-      return "";
-    }
-    const path = NotePath.append(parentNote.path, parentNote.id);
-    const depth = NotePath.getDepth(path);
-    if (depth >= PATH_MAXDEPTH) {
-      throw new IntegrityError("Note max depth exceeded.");
-    }
-    return path;
-  }
+type Payload = {
+  path: string;
+  content: string;
+};
+async function checkRequest(payload: {
+  [k: string]: unknown;
+}): Promise<Payload> {
+  checkProps("/", payload, ["parentId", "content"]);
+  checkUUID("/parentId", payload.parentId, { optional: true });
+  checkString("/content", payload.content, {
+    minLength: 1,
+    maxLength: CONTENT_MAXLEN,
+  });
+  const parent = await checkNoteExists("/parentId", payload.parentId as string);
+  const path = checkPathDepth("/parentId", parent);
+  return { path, content: payload.content as string };
 }
-
-export default Router()
-  .post("/api/notes", validateRequest(validate))
-  .post(
-    "/api/notes",
-    async (req: Request<object, object, Payload>, res, next) => {
-      try {
-        const { content, parentId } = req.body;
-        const path = await InterityRuleset.check(parentId);
-        await notes.insert(path, content);
-        res.status(201);
-        res.end();
-      } catch (e) {
-        next(e);
-      }
-    },
-  );

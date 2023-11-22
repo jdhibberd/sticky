@@ -8,4 +8,4 @@ npx tsc
 # QUIRK: similarly we need to override the `testMatch` option to ignore the 
 # `.d.ts` files generate by tsc
 node --experimental-vm-modules node_modules/jest/bin/jest.js dist \
-  --testMatch '**/__tests__/**/*.test.[jt]s?(x)' 
+  --testMatch '**/__tests__/**/*.test.[jt]s?(x)'

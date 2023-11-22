@@ -1,37 +1,26 @@
-import { type Request, Router } from "express";
-import { notes } from "../../../entity/notes.js";
-import {
-  compileValidationSchema,
-  validateRequest,
-} from "../../../validation.js";
+import { Router } from "express";
+import { type Note, notes } from "../../../entity/notes.js";
+import { checkNoteExists, checkProps, checkUUID } from "../../../validation.js";
 
-type Payload = {
-  id: string;
-};
-
-const validate = compileValidationSchema<Payload>({
-  type: "object",
-  properties: {
-    id: { type: "string", format: "uuid" },
-  },
-  required: ["id"],
-  additionalProperties: false,
+export default Router().delete("/api/notes/:id", async (req, res, next) => {
+  try {
+    const { note } = await checkRequest(req.params);
+    if (note !== null) await notes.dropRecursively(note);
+    res.status(204);
+    res.end();
+  } catch (e) {
+    next(e);
+  }
 });
 
-export default Router()
-  .delete("/api/notes/:id", validateRequest(validate, "params"))
-  .delete("/api/notes/:id", async (req: Request<Payload>, res, next) => {
-    try {
-      const note = await notes.selectById(req.params.id);
-      if (note === null) {
-        res.status(404);
-        res.end();
-        return;
-      }
-      await notes.dropRecursively(note);
-      res.status(204);
-      res.end();
-    } catch (e) {
-      next(e);
-    }
-  });
+type Payload = {
+  note: Note | null;
+};
+async function checkRequest(payload: {
+  [k: string]: unknown;
+}): Promise<Payload> {
+  checkProps("/", payload, ["id"]);
+  checkUUID("/id", payload.id);
+  const note = await checkNoteExists("/id", payload.id as string);
+  return { note };
+}

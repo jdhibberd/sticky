@@ -1,31 +1,26 @@
-import { type Request, Router } from "express";
+import { Router } from "express";
 import { newSession } from "../../../auth.js";
-import {
-  compileValidationSchema,
-  validateRequest,
-} from "../../../validation.js";
+import { checkProps, checkString } from "../../../validation.js";
 import { NAME_MAXLEN } from "../../../entity/sessions.js";
+
+export default Router().post("/login", async (req, res, next) => {
+  try {
+    const { name } = checkRequest(req.body);
+    await newSession(res, name);
+    res.end();
+  } catch (e) {
+    next(e);
+  }
+});
 
 type Payload = {
   name: string;
 };
-
-const validate = compileValidationSchema<Payload>({
-  type: "object",
-  properties: {
-    name: { type: "string", minLength: 2, maxLength: NAME_MAXLEN },
-  },
-  required: ["name"],
-  additionalProperties: false,
-});
-
-export default Router()
-  .post("/login", validateRequest(validate))
-  .post("/login", async (req: Request<object, object, Payload>, res, next) => {
-    try {
-      await newSession(res, req.body.name);
-      res.end();
-    } catch (e) {
-      next(e);
-    }
+function checkRequest(payload: { [k: string]: unknown }): Payload {
+  checkProps("/", payload, ["name"]);
+  checkString("/name", payload.name, {
+    minLength: 2,
+    maxLength: NAME_MAXLEN,
   });
+  return payload as Payload;
+}

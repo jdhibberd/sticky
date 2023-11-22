@@ -1,49 +1,37 @@
-import { type Request, Router } from "express";
+import { Router } from "express";
 import { notes } from "../../../entity/notes.js";
 import {
-  compileValidationSchema,
-  validateRequest,
+  checkProps,
+  checkUUID,
+  checkString,
+  checkNoteExists,
 } from "../../../validation.js";
 import { CONTENT_MAXLEN } from "../../../entity/notes.js";
-import { checkNoteExists } from "../../../validation.js";
-import { type Note } from "../../../entity/notes.js";
+
+export default Router().put("/api/notes", async (req, res, next) => {
+  try {
+    const { id, content } = await checkRequest(req.body);
+    await notes.update(id, content);
+    res.status(204);
+    res.end();
+  } catch (e) {
+    next(e);
+  }
+});
 
 type Payload = {
   id: string;
   content: string;
 };
-
-const validate = compileValidationSchema<Payload>({
-  type: "object",
-  properties: {
-    id: { type: "string", format: "uuid" },
-    content: { type: "string", minLength: 1, maxLength: CONTENT_MAXLEN },
-  },
-  required: ["id", "content"],
-  additionalProperties: false,
-});
-
-class InterityRuleset {
-  static async check(
-    parentId: string | null | undefined,
-  ): Promise<Note | null> {
-    return await checkNoteExists(parentId);
-  }
+async function checkRequest(payload: {
+  [k: string]: unknown;
+}): Promise<Payload> {
+  checkProps("/", payload, ["id", "content"]);
+  checkUUID("/id", payload.id);
+  checkString("/content", payload.content, {
+    minLength: 1,
+    maxLength: CONTENT_MAXLEN,
+  });
+  await checkNoteExists("/id", payload.id as string);
+  return payload as Payload;
 }
-
-export default Router()
-  .put("/api/notes", validateRequest(validate))
-  .put(
-    "/api/notes",
-    async (req: Request<object, object, Payload>, res, next) => {
-      try {
-        const { id, content } = req.body;
-        await InterityRuleset.check(id);
-        await notes.update(id, content);
-        res.status(204);
-        res.end();
-      } catch (e) {
-        next(e);
-      }
-    },
-  );

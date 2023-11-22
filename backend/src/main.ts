@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import { authRequest } from "./lib/auth.js";
 import { closeDbConnections } from "./lib/entity/db.js";
 import registerHandlers from "./lib/routes.gen.js";
-import { IntegrityError } from "./lib/validation.js";
+import { BadRequestError } from "./lib/validation.js";
 import { getPage } from "./lib/html.js";
 
 const app = express();
@@ -33,9 +33,9 @@ app.use(
   "/api",
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   (e: Error, req: Request, res: Response, next: NextFunction): void => {
-    if (e instanceof IntegrityError) {
+    if (e instanceof BadRequestError) {
       res.status(400);
-      res.json({ error: e.message });
+      res.json({ key: e.key ?? null, error: e.message });
       return;
     }
     console.error(e.message);
