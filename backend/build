@@ -1,6 +1,28 @@
 #!/bin/bash
 set -e
-npx prettier --write ./src ./package.json ./tsconfig.json
+
+while getopts 't' flag; do
+  case "${flag}" in
+    t) test_flag=1 ;;
+  esac
+done
+
+npx prettier --write ./src ./package.json ./tsconfig.*.json
 npx eslint src
 rm -rf ./dist
-npx tsc -b
+
+if [[ -v test_flag ]]; then
+  npx tsc -p tsconfig.test.json
+
+  # QUIRK: for jest to work with typescript and ecmascript modules we need to
+  # run it with an experimental node flag
+  # https://jestjs.io/docs/ecmascript-modules
+
+  # QUIRK: similarly we need to override the `testMatch` option to ignore the 
+  # `.d.ts` files generate by tsc
+  node --experimental-vm-modules node_modules/jest/bin/jest.js dist \
+    --testMatch '**/__tests__/**/*.test.[jt]s?(x)'  
+
+else
+  npx tsc -b
+fi
