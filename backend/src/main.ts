@@ -13,7 +13,8 @@ const app = express();
 app.use(express.static("./frontend/dist"));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use("/api", authRequest);
-app.use("/login", bodyParser.json());
+app.use("/signin", bodyParser.json());
+app.use("/signup", bodyParser.json());
 app.use("/api", bodyParser.json());
 
 // app handlers

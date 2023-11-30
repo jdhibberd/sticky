@@ -4,6 +4,8 @@ import {
   NOTE_CONTENT_MAXLEN,
   NOTE_PATH_MAXDEPTH,
 } from "../lib/backend-const.gen.js";
+import Cross from "./symbol/Cross.js";
+import Slash from "./symbol/Slash.js";
 
 type Props = {
   note: Note;
@@ -157,28 +159,13 @@ export default function EditableNote({ note, depth }: Props) {
     if (state.isEditing) {
       return (
         <button onClick={onDeleteClick} onMouseDown={onDeleteMouseDown}>
-          <svg
-            viewBox="0 0 28 28"
-            xmlns="http://www.w3.org/2000/svg"
-            stroke="black"
-            strokeWidth={"2px"}
-          >
-            <line x1="72%" y1="28%" x2="28%" y2="72%" />
-            <line x1="28%" y1="28%" x2="72%" y2="72%" />
-          </svg>
+          <Cross />
         </button>
       );
     } else {
       return (
         <button onClick={onEditClick}>
-          <svg
-            viewBox="0 0 28 28"
-            xmlns="http://www.w3.org/2000/svg"
-            stroke="black"
-            strokeWidth={"2px"}
-          >
-            <line x1="72%" y1="28%" x2="28%" y2="72%" />
-          </svg>
+          <Slash />
         </button>
       );
     }

@@ -1,0 +1,42 @@
+.form-field {
+  --validation-symbol-size: 32px;
+  --v-padding: 6px;
+  --h-padding: 7px;
+  --border-size: 2px;
+  --input-width: calc(100% - (var(--h-padding) * 2) - var(--border-size) * 2);
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field > .value {
+  display: flex;
+  align-items: center;
+}
+
+.form-field > .value > .validation {
+  height: var(--validation-symbol-size);
+  width: var(--validation-symbol-size);
+  display: flex;
+}
+
+.form-field > .value > .input {
+  width: 100%;
+}
+
+.form-field > .value > .input > input[type="text"] {
+  font-family: inherit;
+  font-size: inherit;
+  outline: none;
+  border: solid var(--border-size) black;
+  padding: var(--v-padding) var(--h-padding);
+  width: var(--input-width);
+}
+
+.form-field > .error {
+  --background-color: red;
+  color: white;
+  background-color: var(--background-color);
+  padding: var(--v-padding) var(--h-padding);
+  width: calc(var(--input-width) - var(--validation-symbol-size));
+  border: solid var(--border-size) var(--background-color);
+}

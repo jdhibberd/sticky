@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { SESSION_NAME_MAXLEN } from "../lib/backend-const.gen.js";
+import FormField from "./FormField.js";
 
 export default function SignIn() {
   const [state, setState] = useState<string>("");
@@ -12,7 +13,7 @@ export default function SignIn() {
     if (state.length === 0) {
       return;
     }
-    await fetch("/login", {
+    await fetch("/signin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: state }),
@@ -24,13 +25,16 @@ export default function SignIn() {
     <div className="unauth-form">
       <div className="row">Sign in to your account.</div>
       <div className="row">
-        <div>Enter your name:</div>
-        <input
-          type="text"
-          onChange={onNameChange}
-          value={state}
-          maxLength={SESSION_NAME_MAXLEN}
-        ></input>
+        <FormField label={"Enter your name:"}>
+          <input
+            name="name"
+            autoComplete="given-name"
+            type="text"
+            onChange={onNameChange}
+            value={state}
+            maxLength={SESSION_NAME_MAXLEN}
+          ></input>
+        </FormField>
       </div>
       <div className="row submit">
         <button onClick={onLoginClick}>Sign in</button>
