@@ -1,52 +1,93 @@
-.unauth {
-  display: flex;
-  width: 100%;
+.unauth-page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr auto 2.5fr auto;
+  gap: 10px;
   height: 100vh;
-  align-items: center;
+  --secondary-color: rgb(100, 100, 100);
+}
+
+.unauth-page > .grid-item-a {
+  grid-column: span 2;
+  justify-content: center;
+  align-items: end;
+}
+
+.unauth-page > .grid-item-a > h1 {
+  font-size: 100px;
+  letter-spacing: -4px;
+  margin: 10px;
+}
+
+.unauth-page > .grid-item-b {
+  grid-column: span 2;
   justify-content: center;
 }
 
-.unauth > .form {
-  padding: 40px;
-  border: solid 2px black;
-  border-radius: 3px;
+.unauth-page > .grid-item-b > h2 {
+  font-size: 25px;
+  font-weight: normal;
+  margin: 0 10px 50px 10px;
+  text-align: center;
+  color: var(--secondary-color);
+}
+
+.unauth-page > .grid-item-c {
+  justify-content: center;
+}
+
+.unauth-page > .grid-item-d {
+  justify-content: center;
+}
+
+.unauth-page > .grid-item-e {
+  grid-column: span 2;
+  color: var(--secondary-color);
+  padding: 10px 0;
+}
+
+.unauth-page > [class^="grid-item-"] {
+  display: grid;
+}
+
+.unauth-form {
   display: flex;
   flex-direction: column;
+  width: 500px;
   align-items: center;
+  border-top: solid 2px var(--secondary-color);
 }
 
-.unauth > .form > h1 {
+.unauth-form > .row {
+  width: 80%;
+  margin-top: 30px;
+}
+
+.unauth-form > .row > input[type="text"] {
+  --border-size: 1px;
+  --h-padding: 7px;
+  font-family: inherit;
+  border: solid var(--border-size) black;
+  font-size: inherit;
+  padding: 5px var(--h-padding);
+  width: calc(100% - (var(--h-padding) * 2) - var(--border-size) * 2);
+}
+
+.unauth-form > .submit {
+  display: flex;
+  justify-content: center;
+}
+
+.unauth-form > .submit > button {
   all: unset;
-  display: block;
-  font-size: 70px;
-  font-weight: bold;
-  letter-spacing: -3px;
-  margin-bottom: 10px;
-}
-
-.unauth > .form > .name > .label {
-  padding: 2px 8px;
-}
-
-.unauth > .form > .name > input {
   font-family: inherit;
   font-size: inherit;
-  padding: 5px 7px;
-  margin-bottom: 20px;
-  outline: none;
-}
-
-.unauth > .form > button {
-  all: unset;
-  font-family: inherit;
-  font-size: inherit;
-  display: block;
   background-color: var(--primary-color);
   padding: 8px 15px;
   border-radius: 3px;
   cursor: pointer;
 }
 
-.unauth > .form > button:hover {
+.unauth-form > .submit > button:hover {
   background-color: var(--highlight-color);
 }

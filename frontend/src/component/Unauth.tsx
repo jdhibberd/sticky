@@ -1,40 +1,23 @@
-import React, { useState } from "react";
-import { SESSION_NAME_MAXLEN } from "../lib/backend-const.gen.js";
+import React from "react";
+import SignIn from "./SignIn.js";
+import SignUp from "./SignUp.js";
 
 export default function Unauth() {
-  const [state, setState] = useState<string>("");
-
-  const onNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setState(event.target.value);
-  };
-
-  const onLoginClick = async () => {
-    if (state.length === 0) {
-      return;
-    }
-    await fetch("/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: state }),
-    });
-    window.location.replace("/");
-  };
-
   return (
-    <div className="unauth">
-      <div className="form">
+    <div className="unauth-page">
+      <div className="grid-item-a">
         <h1>Sticky</h1>
-        <div className="name">
-          <div className="label">Your name:</div>
-          <input
-            type="text"
-            onChange={onNameChange}
-            value={state}
-            maxLength={SESSION_NAME_MAXLEN}
-          ></input>
-        </div>
-        <button onClick={onLoginClick}>Login</button>
       </div>
+      <div className="grid-item-b">
+        <h2>Organise together with collaborative sticky notes.</h2>
+      </div>
+      <div className="grid-item-c">
+        <SignIn />
+      </div>
+      <div className="grid-item-d">
+        <SignUp />
+      </div>
+      <div className="grid-item-e">hemingroth &copy; 2023</div>
     </div>
   );
 }
