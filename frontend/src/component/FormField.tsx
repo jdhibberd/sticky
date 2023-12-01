@@ -1,15 +1,16 @@
+/**
+ * A form field that can display the outcome of validation.
+ */
+
 import React from "react";
 import Tick from "./symbol/Tick.js";
 import Cross from "./symbol/Cross.js";
+import { type FormValidationResult } from "@/backend/validation.js";
 
 type Props = {
   label: string;
   children: React.ReactElement;
-  // - `true` indicates that the field has been validated and passed
-  // - `null` indicates that the field has not yet been validated
-  // - a string value indicates that the field has been validated and failed,
-  //   and the reason for the failure is the contents of the string
-  validation?: true | string | null;
+  validation?: FormValidationResult;
 };
 
 export default function FormField({

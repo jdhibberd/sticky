@@ -3,7 +3,7 @@ import { newSession } from "../../../auth.js";
 import { checkProps, checkString } from "../../../validation.js";
 import { NAME_MAXLEN } from "../../../entity/sessions.js";
 
-export default Router().post("/signin", async (req, res, next) => {
+export default Router().post("/api/signin", async (req, res, next) => {
   try {
     const { name } = checkRequest(req.body);
     await newSession(res, name);

@@ -9,11 +9,11 @@ export default function SignIn() {
     setState(event.target.value);
   };
 
-  const onLoginClick = async () => {
+  const onSubmitClick = async () => {
     if (state.length === 0) {
       return;
     }
-    await fetch("/signin", {
+    await fetch("/api/signin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: state }),
@@ -37,7 +37,7 @@ export default function SignIn() {
         </FormField>
       </div>
       <div className="row submit">
-        <button onClick={onLoginClick}>Sign in</button>
+        <button onClick={onSubmitClick}>Sign in</button>
       </div>
     </div>
   );

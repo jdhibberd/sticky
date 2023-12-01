@@ -5,9 +5,9 @@ import handler_3 from "./handlers/api/notes/delete.js";
 import handler_4 from "./handlers/api/notes/get.js";
 import handler_5 from "./handlers/api/notes/post.js";
 import handler_6 from "./handlers/api/notes/put.js";
-import handler_7 from "./handlers/www/get.js";
-import handler_8 from "./handlers/www/signin/post.js";
-import handler_9 from "./handlers/www/signup/post.js";
+import handler_7 from "./handlers/api/signin/post.js";
+import handler_8 from "./handlers/api/signup/post.js";
+import handler_9 from "./handlers/www/get.js";
 
 export default function registerHandlers(app: Express): void {
   app.use(handler_1);

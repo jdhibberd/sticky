@@ -66,6 +66,73 @@ export class BadRequestError extends Error {
 }
 
 /**
+ * Represents the validation state of a form field on the client.
+ *
+ * There are three possible states:
+ *   - `true` indicates that the field has been validated and passed
+ *   - `null` indicates that the field has not yet been validated
+ *   - a string value indicates that the field has been validated and failed,
+ *     and the reason for the failure is the contents of the string
+ */
+export type FormValidationResult = true | string | null;
+
+/**
+ * Represents the validation state of a form on the client.
+ *
+ * For examples:
+ *
+ *   {
+ *     "a": true,
+ *     "b": true,
+ *     "c": "Not a valid number.",
+ *     "d": null,
+ *   }
+ */
+export type FormValidationResponse = { [k: string]: FormValidationResult };
+
+/**
+ * Build the response to a form validation request from the client.
+ *
+ * Forms are completed incrementally, which means form input values are
+ * validated in order, and processing stops if a field fails validation.
+ *
+ * If a field is processed that either failed validation or had the value null
+ * (i.e. not yet completed), then all subsequent validation values are set to
+ * null (i.e. not yet validation), which will result in the client resetting
+ * those values.
+ *
+ * See `FormValidationResponse` for an example return value.
+ */
+export function buildFormValidationResponse(
+  orderedFields: string[],
+  values: (string | null | undefined)[],
+  error: BadRequestError | undefined,
+): FormValidationResponse {
+  let skipRest = false;
+  const getResult = (
+    field: string,
+    v: string | null | undefined,
+  ): FormValidationResult => {
+    if (skipRest === true) {
+      return null;
+    }
+    if (error?.key === `/${field}`) {
+      skipRest = true;
+      return error!.message;
+    }
+    if (v === null) {
+      skipRest = true;
+      return null;
+    }
+    return true;
+  };
+
+  return Object.fromEntries(
+    orderedFields.map((field, i) => [field, getResult(field, values[i])]),
+  );
+}
+
+/**
  * Optional properties sent as part of an HTTP GET request cannot be represented
  * as null, only empty strings. This function replaces them with null.
  */

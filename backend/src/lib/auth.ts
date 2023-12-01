@@ -10,11 +10,16 @@ declare module "express-serve-static-core" {
   }
 }
 
+const UNAUTH_PATHS = ["/api/signin", "/api/signup"];
+
 /**
- * Express handler for enforcing that the user has a valid session. If they have
- * then the session is added to the Express request object for the convenience
- * of subsequent handlers. If they don't then an error is returned and there is
- * no further handling of the request.
+ * Express handler for enforcing that the user has a valid session.
+ *
+ * If they have then the session is added to the Express request object for the
+ * convenience of subsequent handlers. If they don't then an error is returned
+ * and there is no further handling of the request.
+ *
+ * Sign in/up related API endpoints don't require authentication.
  */
 export async function authRequest(
   req: Request,
@@ -22,6 +27,10 @@ export async function authRequest(
   next: NextFunction,
 ) {
   try {
+    if (UNAUTH_PATHS.includes(req.originalUrl)) {
+      next();
+      return;
+    }
     const session = await getSession(req);
     if (session === null) {
       res.status(401);
