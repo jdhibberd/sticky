@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   BadRequestError,
   buildFormValidationResponse,
+  checkEmail,
   checkProps,
   checkString,
 } from "../../../validation.js";
@@ -12,9 +13,9 @@ export default Router().post("/api/signup", async (req, res, next) => {
     let email, name, otp;
     let error;
     try {
-      email = checkEmail(req.body.email);
-      name = checkName(req.body.name);
-      otp = checkOTP(req.body.otp);
+      email = await checkEmailField(req.body.email);
+      name = checkNameField(req.body.name);
+      otp = checkOTPField(req.body.otp);
     } catch (e) {
       if (e instanceof BadRequestError) {
         error = e;
@@ -39,16 +40,12 @@ function checkRequest(payload: { [k: string]: unknown }): void {
   checkProps("/", payload, ["email", "name", "otp"]);
 }
 
-function checkEmail(v: unknown): string | null {
-  checkString("/email", v, {
-    minLength: 2,
-    maxLength: 30,
-    optional: true,
-  });
+async function checkEmailField(v: unknown): Promise<string | null> {
+  await checkEmail("/email", v);
   return v as string | null;
 }
 
-function checkName(v: unknown): string | null {
+function checkNameField(v: unknown): string | null {
   checkString("/name", v, {
     minLength: 1,
     maxLength: 5,
@@ -57,7 +54,7 @@ function checkName(v: unknown): string | null {
   return v as string | null;
 }
 
-function checkOTP(v: unknown): string | null {
+function checkOTPField(v: unknown): string | null {
   checkString("/otp", v, {
     minLength: 6,
     maxLength: 6,

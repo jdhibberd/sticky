@@ -46,10 +46,12 @@
 
 import { type Note, PATH_MAXDEPTH } from "./entity/notes.js";
 import { notes } from "./entity/notes.js";
+import { EMAIL_MAXLEN, EMAIL_MINLEN, users } from "./entity/users.js";
 import { NotePath } from "./util.js";
 
 const UUID_PATTERN =
   /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/;
+const EMAIL_PATTERN = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
 /**
  * The exception thrown if any checks fail.
@@ -221,6 +223,31 @@ export function checkUUID(
     if (e instanceof BadRequestError) e.key = k;
     throw e;
   }
+}
+
+/**
+ * Check that an email address is well formed and still available.
+ */
+export async function checkEmail(k: string, v: unknown): Promise<void> {
+  try {
+    if (checkNull(v, true)) return;
+    checkType(v, "string");
+    checkMinLength(v as string, EMAIL_MINLEN);
+    checkMaxLength(v as string, EMAIL_MAXLEN);
+    checkRegex(v as string, EMAIL_PATTERN, "email");
+    await checkEmailAvailable(v as string);
+  } catch (e) {
+    if (e instanceof BadRequestError) e.key = k;
+    throw e;
+  }
+}
+
+/**
+ * Check that an email address is still available.
+ */
+async function checkEmailAvailable(email: string): Promise<void> {
+  if ((await users.existsEmail(email)) === true)
+    fail("That email is already taken.");
 }
 
 /**

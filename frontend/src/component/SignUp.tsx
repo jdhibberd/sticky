@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import FormField from "./FormField.js";
 import { Form } from "../lib/validation.js";
 import { type FormValidationResult } from "@/backend/validation.js";
+import { USER_EMAIL_MAXLEN } from "../lib/backend-const.gen.js";
 
 type State = {
   input: {
@@ -66,6 +67,7 @@ export default function SignUp() {
           <input
             name="email"
             type="text"
+            maxLength={USER_EMAIL_MAXLEN}
             autoComplete="email"
             onChange={(event) => onInputChange("email", event.target.value)}
             value={state.input.email}
