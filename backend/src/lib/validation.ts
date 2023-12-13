@@ -44,8 +44,10 @@
  * The value 42 is under key '/a/b/c'.
  */
 
+import { OTP_LEN } from "./auth.js";
 import { type Note, PATH_MAXDEPTH } from "./entity/notes.js";
 import { notes } from "./entity/notes.js";
+import { otps } from "./entity/otp.js";
 import { EMAIL_MAXLEN, EMAIL_MINLEN, users } from "./entity/users.js";
 import { NotePath } from "./util.js";
 
@@ -243,11 +245,38 @@ export async function checkEmail(k: string, v: unknown): Promise<void> {
 }
 
 /**
+ * Check that an OTP is well formed and valid for the given email.
+ */
+export async function checkOTP(
+  k: string,
+  v: unknown,
+  email: string | null,
+): Promise<void> {
+  try {
+    if (checkNull(email, true) || checkNull(v, true)) return;
+    checkType(v, "string");
+    checkMinLength(v as string, OTP_LEN);
+    checkMaxLength(v as string, OTP_LEN);
+    await checkOTPValid(v as string, email as string);
+  } catch (e) {
+    if (e instanceof BadRequestError) e.key = k;
+    throw e;
+  }
+}
+
+/**
  * Check that an email address is still available.
  */
-async function checkEmailAvailable(email: string): Promise<void> {
-  if ((await users.existsEmail(email)) === true)
+async function checkEmailAvailable(v: string): Promise<void> {
+  if ((await users.existsEmail(v)) === true)
     fail("That email is already taken.");
+}
+
+/**
+ * Check that an OTP is valid for the given email.
+ */
+async function checkOTPValid(v: string, email: string): Promise<void> {
+  if ((await otps.select(v, email)) === false) fail("Invalid OTP.");
 }
 
 /**

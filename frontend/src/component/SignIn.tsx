@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { SESSION_NAME_MAXLEN } from "../lib/backend-const.gen.js";
+import { USER_NAME_MAXLEN } from "../lib/backend-const.gen.js";
 import FormField from "./FormField.js";
 
 export default function SignIn() {
@@ -33,7 +33,7 @@ export default function SignIn() {
             autoComplete="off"
             onChange={onNameChange}
             value={state}
-            maxLength={SESSION_NAME_MAXLEN}
+            maxLength={USER_NAME_MAXLEN}
           ></input>
         </FormField>
       </div>

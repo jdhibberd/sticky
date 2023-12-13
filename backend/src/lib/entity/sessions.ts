@@ -1,28 +1,25 @@
 import { exec, selectOne } from "./db.js";
 import crypto from "crypto";
 
-// @frontend-export SESSION
-export const NAME_MAXLEN = 32;
-
 class Sessions {
   private static _schema = `
     CREATE TABLE sessions (
       id UUID PRIMARY KEY,
-      name VARCHAR(${NAME_MAXLEN}) NOT NULL
+      user_id UUID NOT NULL
     )   
     `;
 
   /**
    * Create a new user session, returning the session id.
    */
-  async insert(name: string): Promise<string> {
+  async insert(userId: string): Promise<string> {
     const id = crypto.randomUUID();
     await exec(
       `
-      INSERT INTO sessions (id, name) 
+      INSERT INTO sessions (id, user_id) 
       VALUES ($1, $2)
       `,
-      [id, name],
+      [id, userId],
     );
     return id;
   }
@@ -33,7 +30,7 @@ class Sessions {
   async select(id: string): Promise<Session | null> {
     return await selectOne<Session>(
       `
-      SELECT name
+      SELECT user_id
       FROM sessions
       WHERE id = $1
       `,
@@ -55,5 +52,5 @@ class Sessions {
   }
 }
 
-export type Session = { name: string };
+export type Session = { userId: string };
 export const sessions = new Sessions();

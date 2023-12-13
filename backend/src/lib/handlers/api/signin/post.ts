@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { newSession } from "../../../auth.js";
 import { checkProps, checkString } from "../../../validation.js";
-import { NAME_MAXLEN } from "../../../entity/sessions.js";
+import { NAME_MAXLEN } from "../../../entity/users.js";
 
 export default Router().post("/api/signin", async (req, res, next) => {
   try {

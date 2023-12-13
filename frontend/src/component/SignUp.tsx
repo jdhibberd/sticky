@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import FormField from "./FormField.js";
 import { Form } from "../lib/validation.js";
 import { type FormValidationResult } from "@/backend/validation.js";
-import { USER_EMAIL_MAXLEN } from "../lib/backend-const.gen.js";
+import {
+  USER_EMAIL_MAXLEN,
+  AUTH_OTP_LEN,
+  USER_NAME_MAXLEN,
+} from "../lib/backend-const.gen.js";
 
 type State = {
   input: {
@@ -43,8 +47,9 @@ export default function SignUp() {
     const validation = await response.json();
     if (response.status === 200 || response.status === 400) {
       if (form.isComplete(validation)) {
-        console.log("SUCCESS");
-        // window.location.replace("/");
+        // the user should now have an active session, so reload the page to
+        // access the app
+        window.location.replace("/");
       } else {
         const input = form.updateInputState(state.input, validation);
         setState((prevState) => ({ ...prevState, input, validation }));
@@ -70,6 +75,7 @@ export default function SignUp() {
             id="name"
             type="text"
             autoComplete="off"
+            maxLength={USER_NAME_MAXLEN}
             onChange={(event) => onInputChange("name", event.target.value)}
             value={state.input.name}
           ></input>
@@ -117,6 +123,7 @@ export default function SignUp() {
             id="otp"
             type="text"
             autoComplete="off"
+            maxLength={AUTH_OTP_LEN}
             onChange={(event) => onInputChange("otp", event.target.value)}
             value={state.input.otp}
           ></input>

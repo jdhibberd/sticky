@@ -24,6 +24,7 @@
  * single module that represents the table being modified.
  */
 
+import { QueryResult } from "pg";
 import Pool from "pg-pool";
 
 /**
@@ -55,8 +56,8 @@ const pool = new Pool({
 export async function exec(
   sql: string,
   params: (string | number)[],
-): Promise<void> {
-  await pool.query(sql, params);
+): Promise<QueryResult> {
+  return await pool.query(sql, params);
 }
 
 /**

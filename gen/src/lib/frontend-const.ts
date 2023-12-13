@@ -17,12 +17,12 @@
 import fs from "fs";
 import { walkSync } from "../util.js";
 
-const ENTITY_DIR = `../backend/src/lib/entity`;
+const LIB_DIR = `../backend/src/lib`;
 const PATTERN =
   /\/\/ @frontend-export\s(?<ns>[A-Z]+)\n(export\s)?const\s(?<k>[A-Z_]+)\s=\s(?<v>[0-9]+);\n/g;
 
 function* getConsts() {
-  for (const file of walkSync(ENTITY_DIR)) {
+  for (const file of walkSync(LIB_DIR)) {
     const content = fs.readFileSync(file, "utf8");
     for (const { groups: g } of content.matchAll(PATTERN)) {
       yield `${g!.ns}_${g!.k} = ${g!.v}`;
@@ -39,6 +39,6 @@ function gen(f: fs.WriteStream) {
 export default {
   id: "frontend-const",
   output: `../frontend/src/lib/backend-const.gen.ts`,
-  src: ENTITY_DIR,
+  src: LIB_DIR,
   gen,
 };

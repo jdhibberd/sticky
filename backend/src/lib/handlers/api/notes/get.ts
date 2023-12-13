@@ -23,7 +23,7 @@ export default Router().get("/api/notes", async (req, res, next) => {
       path,
       notesByPath,
       likesByNoteIds,
-      req.session.name,
+      "Foo", // req.session.name,
     );
     res.json(data);
   } catch (e) {
