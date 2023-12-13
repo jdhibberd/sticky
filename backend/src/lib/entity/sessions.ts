@@ -11,6 +11,8 @@ class Sessions {
 
   /**
    * Create a new user session, returning the session id.
+   *
+   * A user can have multiple concurrent sessions for different devices.
    */
   async insert(userId: string): Promise<string> {
     const id = crypto.randomUUID();

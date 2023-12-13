@@ -228,16 +228,21 @@ export function checkUUID(
 }
 
 /**
- * Check that an email address is well formed and still available.
+ * Check that an email address is well formed and has the desired availability
+ * state.
  */
-export async function checkEmail(k: string, v: unknown): Promise<void> {
+export async function checkEmail(
+  k: string,
+  v: unknown,
+  { exists }: { exists: boolean },
+): Promise<void> {
   try {
     if (checkNull(v, true)) return;
     checkType(v, "string");
     checkMinLength(v as string, EMAIL_MINLEN);
     checkMaxLength(v as string, EMAIL_MAXLEN);
     checkRegex(v as string, EMAIL_PATTERN, "email");
-    await checkEmailAvailable(v as string);
+    await checkEmailAvailability(v as string, exists);
   } catch (e) {
     if (e instanceof BadRequestError) e.key = k;
     throw e;
@@ -265,11 +270,16 @@ export async function checkOTP(
 }
 
 /**
- * Check that an email address is still available.
+ * Check the availability of an email, throw an exception if the desired
+ * availability state is not found.
  */
-async function checkEmailAvailable(v: string): Promise<void> {
-  if ((await users.existsEmail(v)) === true)
-    fail("That email is already taken.");
+async function checkEmailAvailability(
+  v: string,
+  exists: boolean,
+): Promise<void> {
+  const user = await users.selectByEmail(v);
+  if (exists === true && user === null) fail("Email not found.");
+  if (exists === false && user !== null) fail("Email already taken.");
 }
 
 /**

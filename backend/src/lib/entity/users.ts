@@ -33,19 +33,23 @@ class Users {
   }
 
   /**
-   * Return whether an email address already exists in the table.
+   * Read a single user by its email.
    */
-  async existsEmail(email: string): Promise<boolean> {
-    const result = await selectOne<{ id: string }>(
+  async selectByEmail(email: string): Promise<User | null> {
+    return await selectOne<User>(
       `
-      SELECT id
+      SELECT id, name, email
       FROM users
       WHERE email = $1
       `,
       [email],
     );
-    return result !== null;
   }
 }
 
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+};
 export const users = new Users();

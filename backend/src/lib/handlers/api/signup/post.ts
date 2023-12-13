@@ -51,7 +51,7 @@ async function checkRequest(
       maxLength: NAME_MAXLEN,
       optional: true,
     });
-    await checkEmail("/email", payload.email);
+    await checkEmail("/email", payload.email, { exists: false });
     await checkOTP("/otp", payload.otp, payload.email as string);
   } catch (e) {
     if (e instanceof BadRequestError) {

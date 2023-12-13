@@ -23,7 +23,6 @@ type State = {
 
 export default function SignUp() {
   const form = new Form(["name", "email", "otp"]);
-
   const [state, setState] = useState<State>({
     input: {
       name: "",
