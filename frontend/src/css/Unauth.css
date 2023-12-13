@@ -50,7 +50,7 @@
   display: grid;
 }
 
-.unauth-form {
+form.unauth {
   display: flex;
   flex-direction: column;
   width: 500px;
@@ -58,17 +58,17 @@
   border-top: solid 2px var(--secondary-color);
 }
 
-.unauth-form > .row {
+form.unauth > .row {
   width: 80%;
   margin-top: 30px;
 }
 
-.unauth-form > .submit {
+form.unauth > .submit {
   display: flex;
   justify-content: center;
 }
 
-.unauth-form > .submit > button {
+form.unauth > .submit > button {
   all: unset;
   font-family: inherit;
   font-size: inherit;
@@ -78,6 +78,6 @@
   cursor: pointer;
 }
 
-.unauth-form > .submit > button:hover {
+form.unauth > .submit > button:hover {
   background-color: var(--highlight-color);
 }

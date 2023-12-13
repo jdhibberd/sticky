@@ -10,11 +10,11 @@ import {
 export default Router().post("/api/signup", async (req, res, next) => {
   try {
     checkRequest(req.body);
-    let email, name, otp;
+    let name, email, otp;
     let error;
     try {
-      email = await checkEmailField(req.body.email);
       name = checkNameField(req.body.name);
+      email = await checkEmailField(req.body.email);
       otp = checkOTPField(req.body.otp);
     } catch (e) {
       if (e instanceof BadRequestError) {
@@ -26,8 +26,8 @@ export default Router().post("/api/signup", async (req, res, next) => {
     res.status(error === undefined ? 200 : 400);
     res.json(
       buildFormValidationResponse(
-        ["email", "name", "otp"],
-        [email, name, otp],
+        ["name", "email", "otp"],
+        [name, email, otp],
         error,
       ),
     );
@@ -37,12 +37,7 @@ export default Router().post("/api/signup", async (req, res, next) => {
 });
 
 function checkRequest(payload: { [k: string]: unknown }): void {
-  checkProps("/", payload, ["email", "name", "otp"]);
-}
-
-async function checkEmailField(v: unknown): Promise<string | null> {
-  await checkEmail("/email", v);
-  return v as string | null;
+  checkProps("/", payload, ["name", "email", "otp"]);
 }
 
 function checkNameField(v: unknown): string | null {
@@ -51,6 +46,11 @@ function checkNameField(v: unknown): string | null {
     maxLength: 5,
     optional: true,
   });
+  return v as string | null;
+}
+
+async function checkEmailField(v: unknown): Promise<string | null> {
+  await checkEmail("/email", v);
   return v as string | null;
 }
 

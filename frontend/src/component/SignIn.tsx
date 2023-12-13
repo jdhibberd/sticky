@@ -9,7 +9,8 @@ export default function SignIn() {
     setState(event.target.value);
   };
 
-  const onSubmitClick = async () => {
+  const onSubmitClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault(); // prevent browser refresh
     if (state.length === 0) {
       return;
     }
@@ -22,14 +23,14 @@ export default function SignIn() {
   };
 
   return (
-    <div className="unauth-form">
+    <form className="unauth">
       <div className="row">Sign in to your account.</div>
       <div className="row">
-        <FormField label={"Enter your name:"}>
+        <FormField label={"Enter your name:"} fieldId="name">
           <input
-            name="name"
-            autoComplete="given-name"
+            id="name"
             type="text"
+            autoComplete="off"
             onChange={onNameChange}
             value={state}
             maxLength={SESSION_NAME_MAXLEN}
@@ -39,6 +40,6 @@ export default function SignIn() {
       <div className="row submit">
         <button onClick={onSubmitClick}>Sign in</button>
       </div>
-    </div>
+    </form>
   );
 }

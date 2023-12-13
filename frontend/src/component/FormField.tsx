@@ -9,12 +9,14 @@ import { type FormValidationResult } from "@/backend/validation.js";
 
 type Props = {
   label: string;
+  fieldId: string;
   children: React.ReactElement;
   validation?: FormValidationResult;
 };
 
 export default function FormField({
   label,
+  fieldId,
   validation = null,
   children,
 }: Props) {
@@ -33,7 +35,7 @@ export default function FormField({
 
   return (
     <div className="form-field">
-      <div>{label}</div>
+      <label htmlFor={fieldId}>{label}</label>
       <div className="value">
         <div className="input">{children}</div>
         <div className="validation">{renderValidationSymbol()}</div>

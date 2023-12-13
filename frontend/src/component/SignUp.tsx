@@ -6,34 +6,35 @@ import { USER_EMAIL_MAXLEN } from "../lib/backend-const.gen.js";
 
 type State = {
   input: {
-    email: string;
     name: string;
+    email: string;
     otp: string;
   };
   validation: {
-    email: FormValidationResult;
     name: FormValidationResult;
+    email: FormValidationResult;
     otp: FormValidationResult;
   };
 };
 
 export default function SignUp() {
-  const form = new Form(["email", "name", "otp"]);
+  const form = new Form(["name", "email", "otp"]);
 
   const [state, setState] = useState<State>({
     input: {
-      email: "",
       name: "",
+      email: "",
       otp: "",
     },
     validation: {
-      email: null,
       name: null,
+      email: null,
       otp: null,
     },
   });
 
-  const onSubmitClick = async () => {
+  const onSubmitClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault(); // prevent browser refresh
     const response = await fetch("/api/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -57,42 +58,44 @@ export default function SignUp() {
     });
   };
 
-  const renderEmailField = () => {
+  const renderNameField = () => {
     return (
       <div className="row">
         <FormField
-          label={"Enter your email:"}
-          validation={state.validation.email}
+          label={"Enter your name:"}
+          fieldId="name"
+          validation={state.validation.name}
         >
           <input
-            name="email"
+            id="name"
             type="text"
-            maxLength={USER_EMAIL_MAXLEN}
-            autoComplete="email"
-            onChange={(event) => onInputChange("email", event.target.value)}
-            value={state.input.email}
+            autoComplete="off"
+            onChange={(event) => onInputChange("name", event.target.value)}
+            value={state.input.name}
           ></input>
         </FormField>
       </div>
     );
   };
 
-  const renderNameField = () => {
-    if (!form.isFieldVisible("name", state.validation)) {
+  const renderEmailField = () => {
+    if (!form.isFieldVisible("email", state.validation)) {
       return null;
     }
     return (
       <div className="row">
         <FormField
-          label={"Enter your name:"}
-          validation={state.validation.name}
+          label={"Enter your email:"}
+          fieldId="email"
+          validation={state.validation.email}
         >
           <input
-            name="name"
-            autoComplete="given-name"
+            id="email"
             type="text"
-            onChange={(event) => onInputChange("name", event.target.value)}
-            value={state.input.name}
+            autoComplete="off"
+            maxLength={USER_EMAIL_MAXLEN}
+            onChange={(event) => onInputChange("email", event.target.value)}
+            value={state.input.email}
           ></input>
         </FormField>
       </div>
@@ -107,11 +110,13 @@ export default function SignUp() {
       <div className="row">
         <FormField
           label={"Enter the code sent to your email:"}
+          fieldId="otp"
           validation={state.validation.otp}
         >
           <input
-            name="otp"
+            id="otp"
             type="text"
+            autoComplete="off"
             onChange={(event) => onInputChange("otp", event.target.value)}
             value={state.input.otp}
           ></input>
@@ -132,12 +137,12 @@ export default function SignUp() {
   };
 
   return (
-    <div className="unauth-form">
+    <form className="unauth">
       <div className="row">Create a new account.</div>
-      {renderEmailField()}
       {renderNameField()}
+      {renderEmailField()}
       {renderOTPField()}
       {renderNextButton()}
-    </div>
+    </form>
   );
 }
