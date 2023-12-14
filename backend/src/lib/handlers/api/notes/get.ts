@@ -10,6 +10,7 @@ import {
 } from "../../../validation.js";
 import { NotePath } from "../../../util.js";
 import { type Note } from "../../../entity/notes.js";
+import { getCurrentUser } from "../../../auth.js";
 
 export default Router().get("/api/notes", async (req, res, next) => {
   try {
@@ -19,11 +20,12 @@ export default Router().get("/api/notes", async (req, res, next) => {
     const notesIds = notesByPath.map((note) => note.id);
     const userId = process.env.USER_ID!;
     const likesByNoteIds = await likes.selectByNoteIds(userId, notesIds);
+    const user = await getCurrentUser(req);
     const data = buildNotePageModel(
       path,
       notesByPath,
       likesByNoteIds,
-      "Foo", // req.session.name,
+      user.name,
     );
     res.json(data);
   } catch (e) {

@@ -17,14 +17,7 @@ import { NextFunction, Request, Response } from "express";
 import type { Session } from "./entity/sessions.js";
 import { sessions } from "./entity/sessions.js";
 import crypto from "crypto";
-
-// make the user's session available on the express request object for
-// convenience
-declare module "express-serve-static-core" {
-  interface Request {
-    session: Session;
-  }
-}
+import { User, users } from "./entity/users.js";
 
 // @frontend-export AUTH
 export const OTP_LEN = 6;
@@ -32,16 +25,8 @@ export const OTP_LEN = 6;
 export const OTP_TTL = 30; // as recommended in RFC 6238
 const SESSION_TTL = 1000 * 60 * 60 * 24 * 90; // 90 days in ms
 
-const UNAUTH_PATHS = ["/api/signin", "/api/signup"];
-
 /**
  * Express handler for enforcing that the user has a valid session.
- *
- * If they have then the session is added to the Express request object for the
- * convenience of subsequent handlers. If they don't then an error is returned
- * and there is no further handling of the request.
- *
- * Sign in/up related API endpoints don't require authentication.
  */
 export async function authRequest(
   req: Request,
@@ -49,17 +34,11 @@ export async function authRequest(
   next: NextFunction,
 ) {
   try {
-    if (UNAUTH_PATHS.includes(req.originalUrl)) {
-      next();
-      return;
-    }
-    const session = await getSession(req);
-    if (session === null) {
+    if ((await getSession(req)) === null) {
       res.status(401);
       res.end();
       return;
     }
-    req.session = session;
     next();
   } catch (err) {
     next(err);
@@ -67,7 +46,9 @@ export async function authRequest(
 }
 
 /**
- * Get the current user session, or null if none exists.
+ * Get the current session, or null if none exists.
+ *
+ * This function can be used to determine if the user is logged in.
  */
 export async function getSession(req: Request): Promise<Session | null> {
   const sessionId = req.signedCookies.sessionId;
@@ -78,6 +59,20 @@ export async function getSession(req: Request): Promise<Session | null> {
     return null;
   }
   return await sessions.select(sessionId);
+}
+
+/**
+ * Return the current user (who owns the active session).
+ *
+ * Only call this function in a handler to which the `authRequest` handler has
+ * already been applied (to verify that the user has an active session).
+ */
+export async function getCurrentUser(req: Request): Promise<User> {
+  const session = await getSession(req);
+  if (session === null) throw new Error("No session for current user.");
+  const user = await users.select(session.userId);
+  if (user === null) throw new Error("Current user not found.");
+  return user;
 }
 
 /**

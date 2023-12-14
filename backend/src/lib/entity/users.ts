@@ -33,7 +33,21 @@ class Users {
   }
 
   /**
-   * Read a single user by its email.
+   * Select a user entity by its id.
+   */
+  async select(id: string): Promise<User | null> {
+    return await selectOne<User>(
+      `
+      SELECT id, name, email
+      FROM users
+      WHERE id = $1
+      `,
+      [id],
+    );
+  }
+
+  /**
+   * Select a user entity by its email.
    */
   async selectByEmail(email: string): Promise<User | null> {
     return await selectOne<User>(

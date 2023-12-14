@@ -30,7 +30,7 @@ export default function SignIn() {
 
   const onSubmitClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault(); // prevent browser refresh
-    const response = await fetch("/api/signin", {
+    const response = await fetch("/auth/signin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form.getPayload(state.input)),

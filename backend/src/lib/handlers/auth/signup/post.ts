@@ -19,7 +19,7 @@ type Payload = {
   otp: string | null;
 };
 
-export default Router().post("/api/signup", async (req, res, next) => {
+export default Router().post("/auth/signup", async (req, res, next) => {
   try {
     const error = await checkRequest(req.body);
     const { name, email, otp }: Payload = req.body;
