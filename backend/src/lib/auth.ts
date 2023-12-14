@@ -29,9 +29,8 @@ declare module "express-serve-static-core" {
 // @frontend-export AUTH
 export const OTP_LEN = 6;
 
-// 30s, as recommended in RFC 6238:
-// https://datatracker.ietf.org/doc/html/rfc6238
-export const OTP_TTL = 30;
+export const OTP_TTL = 30; // as recommended in RFC 6238
+const SESSION_TTL = 1000 * 60 * 60 * 24 * 90; // 90 days in ms
 
 const UNAUTH_PATHS = ["/api/signin", "/api/signup"];
 
@@ -85,15 +84,17 @@ export async function getSession(req: Request): Promise<Session | null> {
  * Create a new user session.
  */
 export async function newSession(res: Response, userId: string): Promise<void> {
-  const sessionId = await sessions.insert(userId);
-  res.cookie("sessionId", sessionId, { signed: true });
+  const sessionId = await sessions.insert(userId, SESSION_TTL);
+  res.cookie("sessionId", sessionId, {
+    signed: true,
+    maxAge: SESSION_TTL,
+  });
 }
 
 /**
  * Generate a time-based OTP for a specific user.
  *
- * Implementation based on TOTP algorithm in RFC 6238:
- * https://datatracker.ietf.org/doc/html/rfc6238
+ * Implementation based on TOTP algorithm in RFC 6238.
  */
 export function genOTP(secret: string, email: string): string {
   const now = Math.floor(Date.now() / 1000);

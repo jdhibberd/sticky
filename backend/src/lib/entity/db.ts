@@ -46,6 +46,14 @@ export class ParamBuilder {
   }
 }
 
+/**
+ * Convert a timestamp expressed in milliseconds, to a UTC timestamp string
+ * recognised by Postgres.
+ */
+export function timestamp(ms: number): string {
+  return new Date(ms).toISOString();
+}
+
 const pool = new Pool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
