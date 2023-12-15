@@ -17,8 +17,8 @@ class OTPs {
    * Generate a new OTP for the given email address, and return it.
    */
   async insert(email: string): Promise<string> {
-    const otp = genOTP(process.env.OTP_SECRET!, email);
-    const otpHash = hashOTP(process.env.OTP_SECRET!, email, otp);
+    const otp = genOTP(process.env.OTP_SECRET, email);
+    const otpHash = hashOTP(process.env.OTP_SECRET, email, otp);
     await exec(
       `
       INSERT INTO otps (email, otp)
@@ -34,7 +34,7 @@ class OTPs {
    * Return whether the OTP was valid and redeemed.
    */
   async select(otp: string, email: string): Promise<boolean> {
-    const otpHash = hashOTP(process.env.OTP_SECRET!, email, otp);
+    const otpHash = hashOTP(process.env.OTP_SECRET, email, otp);
     const result = await exec(
       `
       DELETE FROM otps

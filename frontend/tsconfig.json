@@ -11,6 +11,7 @@
       "@/backend/*": ["../backend/src/lib/*"]
     }
   },
+  "files": ["../backend/src/environment.d.ts"],
   "include": ["src"],
   "references": [{ "path": "../backend" }]
 }

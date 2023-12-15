@@ -10,7 +10,7 @@ import {
 } from "../../../validation.js";
 import { otps } from "../../../entity/otp.js";
 import { NAME_MAXLEN, NAME_MINLEN, users } from "../../../entity/users.js";
-import { newSession } from "../../../auth.js";
+import { emailOTP, newSession } from "../../../auth.js";
 
 type RawPayload = { [k: string]: unknown };
 type Payload = {
@@ -75,8 +75,8 @@ function isFormComplete({ name, email, otp }: FormValidationResponse): boolean {
 }
 
 async function sendOTP(email: string): Promise<void> {
-  const test = await otps.insert(email);
-  console.log(test); // TODO replace w/ email
+  const otp = await otps.insert(email);
+  await emailOTP(email, otp);
 }
 
 async function createAccount(

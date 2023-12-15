@@ -18,12 +18,16 @@ import type { Session } from "./entity/sessions.js";
 import { sessions } from "./entity/sessions.js";
 import crypto from "crypto";
 import { User, users } from "./entity/users.js";
+import { sendEmail } from "./mail.js";
 
 // @frontend-export AUTH
 export const OTP_LEN = 6;
 
-export const OTP_TTL = 30; // as recommended in RFC 6238
+export const OTP_TTL = 300; // 5 m
 const SESSION_TTL = 1000 * 60 * 60 * 24 * 90; // 90 days in ms
+
+const OTP_EMAIL_SENDER = `${process.env.APP_NAME} <noreply@hemingroth.com>`;
+const OTP_EMAIL_SUBJECT = `${process.env.APP_NAME} OTP`;
 
 /**
  * Express handler for enforcing that the user has a valid session.
@@ -113,4 +117,16 @@ export function hashOTP(secret: string, email: string, otp: string): string {
     .update(email)
     .update(otp)
     .digest("hex");
+}
+
+/**
+ * Send a user their OTP via email.
+ */
+export async function emailOTP(email: string, otp: string): Promise<void> {
+  await sendEmail(
+    OTP_EMAIL_SENDER,
+    email,
+    OTP_EMAIL_SUBJECT,
+    `Your OTP is ${otp}. It's valid for ${OTP_TTL / 60} minutes.`,
+  );
 }
