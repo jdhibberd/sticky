@@ -8,6 +8,7 @@ import {
   checkNoteExists,
 } from "../validation.js";
 import { type Note } from "../entity/notes.js";
+import * as mock from "../entity/__tests__/mock.js";
 
 describe("checkProps", () => {
   test("basic", () => {
@@ -100,18 +101,11 @@ describe("checkString", () => {
   });
 });
 
-const NOTE_PROTO: Note = {
-  id: "a",
-  content: "xxx",
-  path: "",
-  authorId: "",
-  modified: 0,
-};
-
 describe("checkPathDepth", () => {
   test("basic", () => {
-    const note = { ...NOTE_PROTO, path: "a/b", id: "c" };
-    expect(checkPathDepth("/x", note)).toBe("a/b/c");
+    expect(checkPathDepth("/x", mock.note({ path: "a/b", id: "c" }))).toBe(
+      "a/b/c",
+    );
   });
 
   test("null", () => {
@@ -119,24 +113,23 @@ describe("checkPathDepth", () => {
   });
 
   test("root", () => {
-    const note = { ...NOTE_PROTO, path: "", id: "a" };
-    expect(checkPathDepth("/x", note)).toBe("a");
+    expect(checkPathDepth("/x", mock.note({ path: "", id: "a" }))).toBe("a");
   });
 
   test("exceeds", () => {
-    const note = { ...NOTE_PROTO, path: "a/b/c/d", id: "e" };
-    expect(() => checkPathDepth("/x", note)).toThrow(BadRequestError);
+    expect(() =>
+      checkPathDepth("/x", mock.note({ path: "a/b/c/d", id: "e" })),
+    ).toThrow(BadRequestError);
   });
 });
 
 describe("checkNoteExists", () => {
   test("basic", async () => {
     const { notes } = await import("../entity/notes.js");
-    const f = (notes.selectById = jest.fn(
-      async (): Promise<Note> => NOTE_PROTO,
-    ));
+    const note = mock.note();
+    const f = (notes.selectById = jest.fn(async (): Promise<Note> => note));
     try {
-      await expect(checkNoteExists("/x", "a")).resolves.toBe(NOTE_PROTO);
+      await expect(checkNoteExists("/x", "a")).resolves.toBe(note);
     } finally {
       notes.selectById = f;
     }
