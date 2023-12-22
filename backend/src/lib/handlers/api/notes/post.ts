@@ -7,11 +7,13 @@ import {
   checkNoteExists,
   checkPathDepth,
 } from "../../../validation.js";
+import { getCurrentUser } from "../../../auth.js";
 
 export default Router().post("/api/notes", async (req, res, next) => {
   try {
     const { path, content } = await checkRequest(req.body);
-    await notes.insert(path, content);
+    const user = await getCurrentUser(req);
+    await notes.insert(path, content, user.id);
     res.status(201);
     res.end();
   } catch (e) {

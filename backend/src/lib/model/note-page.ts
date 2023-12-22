@@ -1,5 +1,6 @@
-import type { Note as NoteEntity } from "../entity/notes.js";
-import type { LikesByNoteIds } from "../entity/likes.js";
+import { type Note as NoteEntity } from "../entity/notes.js";
+import { type User } from "../entity/users.js";
+import { type LikesByNoteIds } from "../entity/likes.js";
 import { NotePath } from "../util.js";
 
 export type AncestorNote = {
@@ -10,6 +11,7 @@ export type AncestorNote = {
 export type Note = {
   id: string;
   content: string;
+  author: { name: string };
   likeCount: number;
   likedByUser: boolean;
 };
@@ -28,11 +30,10 @@ export function buildNotePageModel(
   path: string,
   notes: NoteEntity[],
   likes: LikesByNoteIds,
-  userName: string,
+  authors: User[],
+  user: User,
 ): NotePageModel {
-  const notesById = new Map<string, NoteEntity>(
-    notes.map((note) => [note.id, note]),
-  );
+  const notesById = new Map<string, NoteEntity>(notes.map((o) => [o.id, o]));
   const ancestorIds = NotePath.split(path);
   let parentId = null;
   const notesAncestors = ancestorIds.map((id) => {
@@ -47,9 +48,8 @@ export function buildNotePageModel(
       parentId: NotePath.getParent(note.path),
     };
   });
-  const likeCounts = new Map(
-    likes.likeCounts.map((entry) => [entry.noteId, entry.count]),
-  );
+  const likeCounts = new Map(likes.likeCounts.map((o) => [o.noteId, o.count]));
+  const authorById = new Map(authors.map(({ id, name }) => [id, { name }]));
   const likesByUser = new Set(likes.likesByUser);
   const notesChildren = notes
     .filter((note) => note.path === path)
@@ -61,6 +61,7 @@ export function buildNotePageModel(
     .map((note: NoteEntity) => ({
       id: note.id,
       content: note.content,
+      author: authorById.get(note.authorId)!,
       likeCount: likeCounts.get(note.id) ?? 0,
       likedByUser: likesByUser.has(note.id),
     }));
@@ -68,6 +69,6 @@ export function buildNotePageModel(
     ancestors: notesAncestors,
     parentId,
     notes: notesChildren,
-    user: { name: userName },
+    user: { name: user.name },
   };
 }

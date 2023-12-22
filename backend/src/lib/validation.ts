@@ -53,7 +53,7 @@ import { NotePath } from "./util.js";
 
 const UUID_PATTERN =
   /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/;
-const EMAIL_PATTERN = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
+const EMAIL_PATTERN = /^[\w-.+]+@([\w-]+\.)+[\w-]{2,4}$/;
 
 /**
  * The exception thrown if any checks fail.

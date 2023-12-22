@@ -1,4 +1,4 @@
-import { exec, selectOne } from "./db.js";
+import { exec, selectOne, select, ParamBuilder } from "./db.js";
 import crypto from "crypto";
 
 export const NAME_MINLEN = 2;
@@ -57,6 +57,22 @@ class Users {
       WHERE email = $1
       `,
       [email],
+    );
+  }
+
+  /**
+   * Select a set of user entities by their ids.
+   */
+  async selectByIds(ids: string[]): Promise<User[]> {
+    if (ids.length === 0) return [];
+    const param = new ParamBuilder();
+    return await select<User>(
+      `
+      SELECT id, name, email
+      FROM users
+      WHERE id IN (${param.insert(ids.length)})
+      `,
+      ids,
     );
   }
 }

@@ -1,11 +1,13 @@
 import { Router } from "express";
 import { likes } from "../../../entity/likes.js";
 import { checkProps, checkUUID } from "../../../validation.js";
+import { getCurrentUser } from "../../../auth.js";
 
 export default Router().post("/api/likes", async (req, res, next) => {
   try {
     const { noteId } = checkRequest(req.body);
-    await likes.insert(process.env.USER_ID!, noteId);
+    const user = await getCurrentUser(req);
+    await likes.insert(user.id, noteId);
     res.status(201);
     res.end();
   } catch (e) {

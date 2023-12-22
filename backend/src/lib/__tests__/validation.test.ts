@@ -100,7 +100,13 @@ describe("checkString", () => {
   });
 });
 
-const NOTE_PROTO: Note = { id: "a", content: "xxx", path: "", modified: 0 };
+const NOTE_PROTO: Note = {
+  id: "a",
+  content: "xxx",
+  path: "",
+  authorId: "",
+  modified: 0,
+};
 
 describe("checkPathDepth", () => {
   test("basic", () => {

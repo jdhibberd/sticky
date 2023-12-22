@@ -18,6 +18,7 @@ class Notes {
       id UUID PRIMARY KEY,
       content VARCHAR(${CONTENT_MAXLEN}) NOT NULL,
       path VARCHAR(${PATH_MAXLEN}) NOT NULL,
+      author_id UUID NOT NULL,
       modified TIMESTAMP NOT NULL
     )
     `;
@@ -25,13 +26,13 @@ class Notes {
   /**
    * Insert a new note.
    */
-  async insert(path: string, content: string): Promise<void> {
+  async insert(path: string, content: string, authorId: string): Promise<void> {
     await exec(
       `
-      INSERT INTO notes (id, content, path, modified) 
-      VALUES ($1, $2, $3, 'now')
+      INSERT INTO notes (id, content, path, author_id, modified) 
+      VALUES ($1, $2, $3, $4, 'now')
       `,
-      [crypto.randomUUID(), content, path],
+      [crypto.randomUUID(), content, path, authorId],
     );
   }
 
@@ -57,7 +58,7 @@ class Notes {
     if (path === "") {
       return await select<Note>(
         `
-        SELECT id, content, path, modified
+        SELECT id, content, path, author_id, modified
         FROM notes
         WHERE path = ''
         `,
@@ -67,11 +68,11 @@ class Notes {
     const param = new ParamBuilder();
     return await select(
       `
-      SELECT id, content, path, modified
+      SELECT id, content, path, author_id, modified
       FROM notes
       WHERE id IN (${param.insert(ancestorIds.length)})
       UNION
-      SELECT id, content, path, modified
+      SELECT id, content, path, author_id, modified
       FROM notes
       WHERE path = ${param.insert()}
       `,
@@ -85,7 +86,7 @@ class Notes {
   async selectById(id: string): Promise<Note | null> {
     return await selectOne<Note>(
       `
-      SELECT id, content, path, modified
+      SELECT id, content, path, author_id, modified
       FROM notes
       WHERE id = $1
       `,
@@ -121,6 +122,7 @@ export type Note = {
   id: string;
   content: string;
   path: string;
+  authorId: string;
   modified: number;
 };
 export const notes = new Notes();

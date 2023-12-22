@@ -175,7 +175,7 @@ export default function EditableNote({ note, depth }: Props) {
     <div className="note">
       {renderContent()}
       <div className="footer">
-        <div className="author">John</div>
+        <div className="author">{note.author.name}</div>
         <div className="buttons">
           {renderLikeButton()}
           {renderMutateButton()}
