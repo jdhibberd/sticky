@@ -1,0 +1,15 @@
+.avatar {
+  --size: 45px;
+  background-color: var(--primary-color);
+  border-radius: var(--size);
+  width: var(--size);
+  height: var(--size);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.avatar:hover {
+  background-color: var(--highlight-color);
+}

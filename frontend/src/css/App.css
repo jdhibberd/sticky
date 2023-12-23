@@ -10,11 +10,40 @@ body {
   margin: 0 15px;
 }
 
+.app {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto;
+}
+
+.app > aside {
+  justify-content: center;
+  align-content: center;
+  display: flex;
+  padding: 50px 0;
+}
+
 .note-container {
   display: flex;
   flex-wrap: wrap;
   gap: 18px;
   padding: 15px 0;
+  justify-content: center;
+}
+
+@media screen and (min-width: 600px) {
+  .app {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: 1fr;
+  }
+
+  .app > aside {
+    padding: 15px 0 0 15px;
+  }
+
+  .note-container {
+    justify-content: left;
+  }
 }
 
 .note-container-ancestors {
