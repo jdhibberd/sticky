@@ -14,6 +14,7 @@ app.use(express.static("./frontend/dist"));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use("/api", authRequest);
 app.use("/api", bodyParser.json());
+app.use("/auth/signout", authRequest);
 app.use("/auth", bodyParser.json());
 
 // app handlers

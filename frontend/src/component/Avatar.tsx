@@ -5,8 +5,19 @@ type Props = {
 };
 
 export default function Avatar({ name }: Props) {
-  const onClick = () => {
-    console.log("logout");
+  /**
+   * Sign the user out of the app.
+   *
+   * After receiving a successful response from the server, reload the page
+   * to navigate to the unauth page.
+   */
+  const onClick = async () => {
+    const response = await fetch("/auth/signout", {
+      method: "POST",
+    });
+    if (response.status === 200) {
+      window.location.replace("/");
+    }
   };
 
   return (

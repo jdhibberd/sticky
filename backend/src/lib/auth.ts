@@ -28,6 +28,7 @@ const SESSION_TTL = 1000 * 60 * 60 * 24 * 90; // 90 days in ms
 
 const OTP_EMAIL_SENDER = `${process.env.APP_NAME} <noreply@hemingroth.com>`;
 const OTP_EMAIL_SUBJECT = `${process.env.APP_NAME} OTP`;
+const SESSION_COOKIE_NAME = "sessionId";
 
 /**
  * Express handler for enforcing that the user has a valid session.
@@ -50,19 +51,15 @@ export async function authRequest(
 }
 
 /**
- * Get the current session, or null if none exists.
+ * Get the current user's session.
  *
- * This function can be used to determine if the user is logged in.
+ * This function can be used to determine if the user is signed-in. `null` is
+ * returned if the current user doesn't have a session.
  */
 export async function getSession(req: Request): Promise<Session | null> {
-  const sessionId = req.signedCookies.sessionId;
-  // a value of undefined indicates that the user doesn't have a session cookie
-  // and a value of false indicates that the signed session cookie has been
-  // tampered with
-  if (sessionId === undefined || sessionId === false) {
-    return null;
-  }
-  return await sessions.select(sessionId);
+  const id = getSessionId(req);
+  if (id === null) return null;
+  return await sessions.select(id);
 }
 
 /**
@@ -80,14 +77,39 @@ export async function getCurrentUser(req: Request): Promise<User> {
 }
 
 /**
- * Create a new user session.
+ * Create a new session.
  */
 export async function newSession(res: Response, userId: string): Promise<void> {
   const sessionId = await sessions.insert(userId, SESSION_TTL);
-  res.cookie("sessionId", sessionId, {
+  res.cookie(SESSION_COOKIE_NAME, sessionId, {
     signed: true,
     maxAge: SESSION_TTL,
   });
+}
+
+/**
+ * End the current user's session.
+ *
+ * The options passed to `clearCookie` must be identical to those used when
+ * creating the cookie, but omit `maxAge`.
+ */
+export async function endSession(req: Request, res: Response): Promise<void> {
+  const id = getSessionId(req);
+  if (id === null) throw new Error("No session for current user.");
+  res.clearCookie(SESSION_COOKIE_NAME, { signed: true });
+  await sessions.drop(id);
+}
+
+/**
+ * Return the current user's session id.
+ *
+ * The session id is stored in a signed cookie, so a value of `undefined`
+ * indicates that the user doesn't have a session cookie and a value of `false`
+ * indicates that the signed session cookie has been tampered with.
+ */
+function getSessionId(req: Request): string | null {
+  const id = req.signedCookies.sessionId;
+  return id === undefined || id === false ? null : id;
 }
 
 /**
