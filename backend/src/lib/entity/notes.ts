@@ -10,7 +10,7 @@ export const PATH_MAXDEPTH = 5;
 // maximum path length is determined by the length of a uuid string (36 bytes)
 // multiplied by the max path depth, also allowing for a delimiter char between
 // uuids
-export const PATH_MAXLEN = 36 * PATH_MAXDEPTH + (PATH_MAXDEPTH - 1);
+export const PATH_MAXLEN = 36 * PATH_MAXDEPTH + (PATH_MAXDEPTH - 1); // 184
 
 class Notes {
   private static _schema = `

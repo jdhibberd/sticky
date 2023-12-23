@@ -54,7 +54,14 @@ test(`simple view with ancestors, children, and children with children`, async (
   expect(
     buildNotePageModel(path, notes, likes, authors, users[0]),
   ).toStrictEqual({
-    ancestors: [{ id: note1.id, content: note1.content, parentId: null }],
+    ancestors: [
+      {
+        id: note1.id,
+        content: note1.content,
+        author: { name: users[1].name },
+        parentId: null,
+      },
+    ],
     parentId: note1.id,
     notes: [
       {

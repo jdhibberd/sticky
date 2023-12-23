@@ -6,6 +6,7 @@ import { NotePath } from "../util.js";
 export type AncestorNote = {
   id: string;
   content: string;
+  author: { name: string };
   parentId: string | null;
 };
 export type Note = {
@@ -34,6 +35,7 @@ export function buildNotePageModel(
   user: User,
 ): NotePageModel {
   const notesById = new Map<string, NoteEntity>(notes.map((o) => [o.id, o]));
+  const authorById = new Map(authors.map(({ id, name }) => [id, { name }]));
   const ancestorIds = NotePath.split(path);
   let parentId = null;
   const notesAncestors = ancestorIds.map((id) => {
@@ -45,11 +47,11 @@ export function buildNotePageModel(
     return {
       id: note.id,
       content: note.content,
+      author: authorById.get(note.authorId)!,
       parentId: NotePath.getParent(note.path),
     };
   });
   const likeCounts = new Map(likes.likeCounts.map((o) => [o.noteId, o.count]));
-  const authorById = new Map(authors.map(({ id, name }) => [id, { name }]));
   const likesByUser = new Set(likes.likesByUser);
   const notesChildren = notes
     .filter((note) => note.path === path)

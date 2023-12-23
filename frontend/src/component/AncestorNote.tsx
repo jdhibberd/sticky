@@ -14,7 +14,7 @@ export default function AncestorNote({ note }: Props) {
     <div className="note note-link" onClick={onContentClick}>
       <div className="content">{note.content}</div>
       <div className="footer">
-        <div className="author">John</div>
+        <div className="author">{note.author.name}</div>
       </div>
     </div>
   );
