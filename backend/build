@@ -7,11 +7,12 @@ while getopts 't' flag; do
   esac
 done
 
-npx prettier --write ./src ./package.json ./tsconfig.*.json
-npx eslint src
 rm -rf ./dist
 
 if [[ -v test_flag ]]; then
+
+  npx prettier --check ./src ./package.json ./tsconfig.*.json
+  npx eslint src
   npx tsc -p tsconfig.test.json
 
   # QUIRK: for jest to work with typescript and ecmascript modules we need to
@@ -23,10 +24,9 @@ if [[ -v test_flag ]]; then
   node --experimental-vm-modules node_modules/jest/bin/jest.js dist \
     --testMatch '**/__tests__/**/*.test.[jt]s?(x)'  
 
-  # delete generated files to avoid then being used to run the application
-  # (they're missing sourcemaps, etc.)
-  rm -rf ./dist
-
 else
+
+  npx prettier --write ./src ./package.json ./tsconfig.*.json
+  npx eslint src
   npx tsc -b
 fi

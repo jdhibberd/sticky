@@ -1,6 +1,19 @@
 #!/bin/bash
 set -e
-npx prettier --write ./src ./package.json ./tsconfig.json
-npx eslint src
+
+while getopts 't' flag; do
+  case "${flag}" in
+    t) test_flag=1 ;;
+  esac
+done
+
 rm -rf ./dist
+
+if [[ -v test_flag ]]; then
+  npx prettier --check ./src ./package.json ./tsconfig.json
+else
+  npx prettier --write ./src ./package.json ./tsconfig.json  
+fi
+
+npx eslint src
 npx tsc

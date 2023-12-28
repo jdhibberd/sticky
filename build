@@ -1,21 +1,28 @@
 #!/bin/bash
 set -e
 
-while getopts 'b' flag; do
+# build the application
+
+while getopts 'bt' flag; do
   case "${flag}" in
+    # only build the application, don't run it
     b) build_only_flag=1 ;;
+    # only run tests on the application, including linters and formatters
+    t) test_flag=1 ;;
   esac
 done
 
-# if the build system hasn't been built then build it first, but this will only
-# happen once and future updates to the build system need to be manually built
-# by running command below
+# if the build system hasn't been built then build it first
 if [ ! -d "./make/dist" ]; then
   (cd make && ./build)
 fi
 
 # ensure all the build artefacts exist for each package
-node ./make/dist/main.js
+if [[ -v test_flag ]]; then
+  node ./make/dist/main.js -t
+else
+  node ./make/dist/main.js
+fi
 
 # unless run in "build only" mode, start the server
 if [[ ! -v build_only_flag ]]; then

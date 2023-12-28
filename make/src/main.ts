@@ -15,6 +15,10 @@
  * Each package has its own local 'build' script that is responsible for
  * building its artefacts and storing them in a local 'dist' dir,
  * e.g. './backend/dist'. These are not committed to version control.
+ *
+ * Each local build script can be run with a `-t` flag to only test the package
+ * for correctness (e.g. linting, formatting, testing). This mode is typically
+ * used by a git commit hook.
  */
 
 import fs from "fs";
@@ -23,17 +27,25 @@ import { spawn } from "child_process";
 
 const GREEN_START = "\x1b[32m";
 const GREEN_END = "\x1b[0m";
-type Package = "backend" | "frontend" | "gen";
+type Package = "backend" | "frontend" | "gen" | "make";
 
 /**
  * Run the high-level steps required to build the application.
+ *
+ * Updates to the build system ("make") will only take affect the next time the
+ * build command is run.
+ *
+ * If the `-t` cli arg is specified then all packages are built in test mode,
+ * which is typically used by the pre-commit hook.
  */
 async function main(): Promise<void> {
+  const isTest = process.argv[2] === "-t";
   const startTime = performance.now();
-  await buildPackageIfStale("gen", []);
+  await buildPackageIfStale("make", [], isTest);
+  await buildPackageIfStale("gen", [], isTest);
   await runCodegen();
-  await buildPackageIfStale("backend", ["gen"]);
-  await buildPackageIfStale("frontend", ["gen", "backend"]);
+  await buildPackageIfStale("backend", ["gen"], isTest);
+  await buildPackageIfStale("frontend", ["gen", "backend"], isTest);
   const duration = Math.round((performance.now() - startTime) / 1000);
   log(`Build complete in ${duration}s`);
 }
@@ -43,10 +55,15 @@ await main();
 /**
  * Rebuild a package (e.g. frontend, backend) if it's stale.
  */
-async function buildPackageIfStale(id: Package, deps: Package[]) {
+async function buildPackageIfStale(
+  id: Package,
+  deps: Package[],
+  isTest: boolean,
+) {
   if (isPackageStale(id, deps)) {
     log(`Building ${id}`);
-    await execCommand(`(cd ${id} && ./build)`);
+    const cmd = isTest ? `(cd ${id} && ./build -t)` : `(cd ${id} && ./build)`;
+    await execCommand(cmd);
   }
 }
 
